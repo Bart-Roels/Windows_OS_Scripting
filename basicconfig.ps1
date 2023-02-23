@@ -15,9 +15,15 @@ $nic = Get-NetAdapter | Where-Object { $_.Name -eq "Ethernet" }
 $nic | Set-NetIPAddress -IPAddress $ipAddress -PrefixLength $subnetMask -DefaultGateway $defaultGateway
 $nic | Set-DnsClientServerAddress -ServerAddresses $dnsServers
 
-# Set the timezone to the local timezone
-
-Set-TimeZone -Name "Central Standard Time"
+# Choose the timezone
+$timeZoneOptions = @(
+    [PSCustomObject]@{ Name = "Pacific Standard Time"; Value = "Pacific Standard Time" }
+    [PSCustomObject]@{ Name = "Mountain Standard Time"; Value = "Mountain Standard Time" }
+    [PSCustomObject]@{ Name = "Central Standard Time"; Value = "Central Standard Time" }
+    [PSCustomObject]@{ Name = "Eastern Standard Time"; Value = "Eastern Standard Time" }
+)
+$timeZone = $timeZoneOptions | Out-GridView -Title "Choose the timezone" -PassThru
+Set-TimeZone -Name $timeZone.Value
 
 # Enable remote desktop access
 Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
