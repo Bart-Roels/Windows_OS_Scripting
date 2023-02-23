@@ -11,9 +11,13 @@ $dnsServers = Read-Host "Enter the DNS servers for this server (e.g. '8.8.8.8', 
 Rename-Computer -NewName $hostname -Restart
 
 # Configure a static IP address
-$nic = Get-NetAdapter | Where-Object { $_.Name -eq "Ethernet" }
-$nic | Set-NetIPAddress -IPAddress $ipAddress -PrefixLength $subnetMask -DefaultGateway $defaultGateway
-$nic | Set-DnsClientServerAddress -ServerAddresses $dnsServers
+$nicParams = @{
+    IPAddress      = $ipAddress
+    PrefixLength   = $subnetMask
+    DefaultGateway = $defaultGateway
+}
+Get-NetAdapter -Name "Ethernet" | Set-NetIPAddress @nicParams
+Get-NetAdapter -Name "Ethernet" | Set-DnsClientServerAddress -ServerAddresses $dnsServers
 
 # Choose the timezone
 $timeZoneOptions = @(
@@ -32,12 +36,15 @@ Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 # Disable IE Enhanced Security Setting
 $AdminKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}"
 $UserKey = "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}"
-Set-ItemProperty -Path $AdminKey -Name "IsInstalled" -Value 0
-Set-ItemProperty -Path $UserKey -Name "IsInstalled" -Value 0
+$ieParams = @{
+    Path  = $AdminKey
+    Name  = "IsInstalled"
+    Value = 0
+}
+Set-ItemProperty @ieParams
+$ieParams.Path = $UserKey
+Set-ItemProperty @ieParams
 Stop-Process -Name Explorer
 
 # Set the Control Panel view to Small icons
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" -Name "AllItemsIconView" -Value 1
-
-# Enable file extensions in Windows Explorer
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Value 0
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" -Name "AllItemsIconView" -Value 
