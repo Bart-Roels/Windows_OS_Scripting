@@ -1,13 +1,20 @@
-$adapter = Read-Host "Enter the name of the network adapter you want to configure"
-$ipAddress = Read-Host "Enter the IP address for this server (e.g. 192.168.0.10)"
-$subnetMask = Read-Host "Enter the subnet mask for this server (e.g. 255.255.255.0)"
-$defaultGateway = Read-Host "Enter the default gateway for this server"
-$dnsServers = Read-Host "Enter the DNS server addresses (separated by commas)"
+# Prompt user for input
+$IPAddress = Read-Host "Enter IP address (e.g. 192.168.1.100)"
+$SubnetMask = Read-Host "Enter subnet mask (e.g. 255.255.255.0)"
+$Gateway = Read-Host "Enter default gateway (e.g. 192.168.1.1)"
+$InterfaceAlias = Read-Host "Enter interface alias (e.g. Ethernet)"
 
-$prefixLength = Convert-NetmaskToPrefixLength $subnetMask
+# Convert subnet mask to byte value and set IPv4 network settings using the input
+$PrefixLength = (ConvertTo-Byte -InputObject $SubnetMask.Split(".")[-1])
+Set-NetIPAddress -InterfaceAlias $InterfaceAlias -IPAddress $IPAddress -PrefixLength $PrefixLength -DefaultGateway $Gateway
 
-New-NetIPAddress -InterfaceAlias $adapter -IPAddress $ipAddress -PrefixLength $prefixLength -DefaultGateway $defaultGateway
-Set-DnsClientServerAddress -InterfaceAlias $adapter -ServerAddresses $dnsServers.Split(',')
+# Set interface operational status and DNS server addresses using the input
+Set-NetIPInterface -InterfaceAlias $InterfaceAlias -InterfaceOperationalStatus Up ` -DnsServerAddresses ($DNSServers -split ',')
+
+
+
+# Disable ipv6
+Set-NetIPInterface -InterfaceAlias $adapter -Forwarding Enabled -Dhcp Enabled -AddressFamily IPv6 -InterfaceMetric 1 -InterfaceIndex 1 -InterfaceOperationalStatus Up -InterfaceAlias $adapter -InterfaceDescription $adapter -InterfaceT
 
 # Choose the timezone
 Set-TimeZone -Name "Central European Standard Time"
