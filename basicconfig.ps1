@@ -1,4 +1,4 @@
-# Prompt for the hostname
+# Prompt for the hostname 
 $hostname = Read-Host "Enter the hostname for this server (e.g. FileServer01)"
 
 # Prompt for the IP address and subnet mask
