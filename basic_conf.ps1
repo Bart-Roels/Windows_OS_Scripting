@@ -1,14 +1,11 @@
 # Prompt for the hostname 
 $hostname = Read-Host "Enter the hostname for this server (e.g. FileServer01)"
-
 # Prompt for the IP address and subnet mask
 $ipAddress = Read-Host "Enter the IP address for this server (e.g. 192.168.0.10)"
 $subnetMask = Read-Host "Enter the subnet mask for this server (e.g. 255.255.255.0)"
 $defaultGateway = Read-Host "Enter the default gateway for this server"
 $dnsServers = Read-Host "Enter the DNS servers for this server (e.g. '8.8.8.8', '8.8.4.4')"
 
-# Set the hostname to the specified value
-Rename-Computer -NewName $hostname -Restart
 
 # Configure a static IP address
 $nicParams = @{
@@ -16,8 +13,8 @@ $nicParams = @{
     PrefixLength   = $subnetMask
     DefaultGateway = $defaultGateway
 }
-Get-NetAdapter -Name "Ethernet" | Set-NetIPAddress @nicParams
-Get-NetAdapter -Name "Ethernet" | Set-DnsClientServerAddress -ServerAddresses $dnsServers
+Get-NetAdapter -Name "Ethernet0" | Set-NetIPAddress @nicParams
+Get-NetAdapter -Name "Ethernet0" | Set-DnsClientServerAddress -ServerAddresses $dnsServers
 
 # Choose the timezone
 Set-TimeZone -Name "Central European Standard Time"
@@ -42,3 +39,11 @@ Stop-Process -Name Explorer
 
 # Set the Control Panel view to Small icons
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" -Name "AllItemsIconView" -Value 
+
+# Set the hostname to the specified value
+Rename-Computer -NewName $hostname
+
+# Notify user and restart after 10 seconds
+Write-Host "The server will restart in 10 seconds."
+Start-Sleep -Seconds 10
+Restart-Computer -Force
