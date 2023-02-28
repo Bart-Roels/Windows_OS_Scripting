@@ -49,10 +49,9 @@ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer
 # Set in file explorer to show file extensions
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "HideFileExt" -Type DWord -Value 0
 
-# Set hostname
-# Rename-Computer -NewName $ComputerName 
-# # Warn user that the computer needs to be restarted
-# Write-Host "The computer needs to be restarted to apply the changes. Press any key to restart the computer."
-# $null = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-# Restart-Computer -Force
-
+# Set the computer name
+Rename-Computer -NewName $ComputerName 
+# Warn user that the computer needs to be restarted
+Write-Host "The computer needs to be restarted to apply the changes. Press any key to restart the computer."
+$null = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+Restart-Computer -Forc
