@@ -16,9 +16,6 @@ New-NetIPAddress –IPAddress $IPAddress  -DefaultGateway $Gateway -PrefixLength
 # Set DNS server addresses using the input
 Set-DNSClientServerAddress –InterfaceIndex (Get-NetAdapter).InterfaceIndex –ServerAddresses $dnsServer1, $dnsServer2
 
-# Disable IPv6
-Set-NetIPInterface -InterfaceAlias $InterfaceAlias -Forwarding Enabled -AddressFamily IPv6 -InterfaceMetric 1
-
 # Choose the timezone
 Set-TimeZone -Name 'Central European Standard Time' -PassThru
 
