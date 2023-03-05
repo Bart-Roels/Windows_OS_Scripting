@@ -1,11 +1,10 @@
-# Hostname
+# Prompt user for input and set variables
 $ComputerName = Read-Host "Enter the computer name (e.g. server1)"
 
-# Prompt user for input
+# Prompt user for input ip settings
 $IPAddress = Read-Host "Enter IP address (e.g. 192.168.1.100)"
 $Prefix = Read-Host "Enter subnet prefix (e.g. 24)"
 $Gateway = Read-Host "Enter default gateway (e.g. 192.168.1.1)"
-$InterfaceAlias = Read-Host "Enter interface alias (e.g. Ethernet)"
 $dnsServer1 = Read-Host "Enter the primary DNS server for this server"
 $dnsServer2 = Read-Host "Enter the secondary DNS server for this server"
 
@@ -17,8 +16,7 @@ New-NetIPAddress –IPAddress $IPAddress  -DefaultGateway $Gateway -PrefixLength
 Set-DNSClientServerAddress –InterfaceIndex (Get-NetAdapter).InterfaceIndex –ServerAddresses $dnsServer1, $dnsServer2
 
 # Choose the timezone
-Set-TimeZone -Name 'Central European Standard Time' -PassThru
-
+Set-TimeZone -Name 'Romance Standard Time' -PassThru
 
 # Enable remote desktop access
 Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
