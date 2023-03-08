@@ -1,10 +1,34 @@
 # Prompt user for input and set variables
 $ComputerName = Read-Host "Enter the computer name (e.g. server1)"
 
-# Prompt user for input ip settings
-$IPAddress = Read-Host "Enter IP address (e.g. 192.168.1.100)"
+# Prompt user for ip and validate it
+do {
+    $validIP = $true
+    $IPAddress = Read-Host "Enter IP address (e.g. 192.168.1.100)"
+    try {
+        [System.Net.IPAddress]::Parse($IPAddress) | Out-Null
+    }
+    catch {
+        Write-Host "Invalid IP address entered. Please enter a valid IP address."
+        $validIP = $false
+    }
+} until ($validIP)
+
+# Prompt user for input ip settings gateway and validate it
+do {
+    $validGateway = $true
+    $Gateway = Read-Host "Enter default gateway (e.g. 192.168.1.1)"
+    try {
+        [System.Net.IPAddress]::Parse($Gateway) | Out-Null
+    }
+    catch {
+        Write-Host "Invalid default gateway entered. Please enter a valid default gateway."
+        $validGateway = $false
+    }
+} until ($validGateway)
+
+# Ask for the subnet prefix and dns servers
 $Prefix = Read-Host "Enter subnet prefix (e.g. 24)"
-$Gateway = Read-Host "Enter default gateway (e.g. 192.168.1.1)"
 $dnsServer1 = Read-Host "Enter the primary DNS server for this server"
 $dnsServer2 = Read-Host "Enter the secondary DNS server for this server"
 
@@ -53,3 +77,4 @@ Rename-Computer -NewName $ComputerName
 Write-Host "The computer needs to be restarted to apply the changes. Press any key to restart the computer."
 $null = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 Restart-Computer -Forc
+
