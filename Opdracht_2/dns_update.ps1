@@ -1,3 +1,10 @@
+### Imports
+Add-Type -AssemblyName Microsoft.VisualBasic
+
+# YOU HAVE TO ADD TO RUN THIS SCRIPT --> Import-Module ActiveDirectory 
+# This is because the script contains the Add-ADReplicationSubnet cmdlet, which is not available in the ActiveDirectory module by default.
+# https://www.thatlazyadmin.com/2017/05/08/adding-subnets-active-directory-sites-and-services-powershell/
+
 ### FUNCTIONS
 
 # Cidr to netmask
@@ -55,8 +62,12 @@ function Get-NetworkAddress {
 
 ### MAIN SCRIPT 
 
+$siteName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the first site name (e.g. site1)", "Site name")
+
 # Get subnets from eth0 adapter
 $adpt = Get-NetIPAddress -InterfaceAlias "Ethernet0" -AddressFamily IPv4 
+# Prfix length
+$prefixLength = $adpt.PrefixLength
 
 # Set primary DNS server to itself & delete secondary DNS server
 Set-DnsClientServerAddress -InterfaceAlias "Ethernet0" -ServerAddresses $adpt.IPAddress
@@ -73,9 +84,9 @@ $networkAddress = Get-NetworkAddress -InterfaceAlias "Ethernet0" -IPAddress $adp
 # Create DNS reverse lookup zone
 Add-DnsServerPrimaryZone -NetworkId $networkAddress -ReplicationScope "Domain" -DynamicUpdate "Secure"
 
+# Network address + mask
+$networkAddressWithMask = $networkAddress.ToString() + "/" + $prefixLength.ToString()
 
-
-
-
-
-
+# Rename the 'default-first-site-name' to a meaningful name and add your subnet to it.
+Add-ADReplicationSubnet -Name $networkAddressWithMask -SiteName "Default-First-Site-Name"
+Rename-DnsServerPrimaryZone -Name "default-first-site-name" -NewName $siteName
