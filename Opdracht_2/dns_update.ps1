@@ -70,11 +70,8 @@ $netmask = CIDRToNetMask -PrefixLength $prefixLength
 # Get network address based on IP address and subnet mask
 $networkAddress = Get-NetworkAddress -InterfaceAlias "Ethernet0" -IPAddress $adpt.IPAddress -SubnetMask $netmask
 
-# Use the first 3 octets of the network address as the network ID
-$networkId = $networkAddress.GetAddressBytes()[0..2] -join "."
-
 # Create DNS reverse lookup zone
-Add-DnsServerPrimaryZone -NetworkId $networkId -ReplicationScope "Domain" -DynamicUpdate "Secure"
+Add-DnsServerPrimaryZone -NetworkId $networkAddress -ReplicationScope "Domain" -DynamicUpdate "Secure"
 
 
 
