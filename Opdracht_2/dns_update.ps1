@@ -4,6 +4,7 @@ Add-Type -AssemblyName Microsoft.VisualBasic
 # YOU HAVE TO ADD TO RUN THIS SCRIPT --> Import-Module ActiveDirectory 
 # This is because the script contains the Add-ADReplicationSubnet cmdlet, which is not available in the ActiveDirectory module by default.
 # https://www.thatlazyadmin.com/2017/05/08/adding-subnets-active-directory-sites-and-services-powershell/
+# https://stackoverflow.com/questions/17548523/the-term-get-aduser-is-not-recognized-as-the-name-of-a-cmdlet
 
 ### FUNCTIONS
 
@@ -88,5 +89,76 @@ Add-DnsServerPrimaryZone -NetworkId $networkAddress -ReplicationScope "Domain" -
 $networkAddressWithMask = $networkAddress.ToString() + "/" + $prefixLength.ToString()
 
 # Rename the 'default-first-site-name' to a meaningful name and add your subnet to it.
-Add-ADReplicationSubnet -Name $networkAddressWithMask -SiteName "Default-First-Site-Name"
-Rename-DnsServerPrimaryZone -Name "default-first-site-name" -NewName $siteName
+Get-ADReplicationSite -Identity "Default-First-Site-Name" | Rename-ADObject -NewName $siteName
+New-ADReplicationSubnet -Name $networkAddressWithMask -Site $siteName
+
+# Check if DHCP Server Role is installed, if not install it
+$DHCPRole = Get-WindowsFeature -Name DHCP -ErrorAction SilentlyContinue
+if (!$DHCPRole.Installed) {
+    # Install DHCP Server Role with serve tools
+    Install-WindowsFeature -Name DHCP -IncludeManagementTools
+    
+}
+
+# Authorize DHCP server to give out IP addresses
+Add-DhcpServerInDC 
+
+# Remove DHCP authorization warning
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\dhcp\Parameters" -Name "EnableWarning" -Value 1
+
+# Create IPv4 scope
+$ScopeName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the scope name for DHCP", "Scope name")
+$ScopeDescription = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the scope description for DHCP", "Scope description")
+$startRange = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the startrange for DHCP (add all ip's in range and then exclude)", "start range")
+$endRange = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the endrange for DHCP", "End range")
+$subnetMask = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the subnet mask for DHCP", "Subnet mask")
+
+# Exclude IP addresses from DHCP scope leave empty if no IP addresses need to be excluded
+$startExcludedRange = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the start excluded range for DHCP", "Start excluded range")
+$endExcludedRange = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the end excluded range for DHCP", "End excluded range")
+
+# Ip range 192.168.1.1 --> Pfsense
+# Ip range 192.168.1.1 , 192.168.1.254 --> Pfsense + 253 clients
+# Exclude 192.168.1.1 , 192.168.1.10
+
+# Check if excluded range is empty
+if ($startExcludedRange -ne "" -and $endExcludedRange -ne "") {
+    # Create DHCP scope
+    Add-DhcpServerv4Scope -Name $ScopeName -StartRange $startRange -EndRange $endRange -SubnetMask $subnetMask -Description $ScopeDescription 
+
+    # Get DHCP scope by name
+    $scope = Get-DhcpServerv4Scope -ComputerName "DC1" 
+
+    if ($scope -ne $null) {
+        # Get DHCP scope ID
+        $scopeId = $scope.ScopeId
+        # Add exclusion range to DHCP scope
+        Add-Dhcpserverv4ExclusionRange -ScopeId $scopeId -StartRange $startExcludedRange -EndRange $endExcludedRange
+    }
+    else {
+        Write-Host "Could not find DHCP scope with name $ScopeName"
+    }
+}
+else {
+    # Create DHCP scope
+    Add-DhcpServerv4Scope -Name $ScopeName -StartRange $startRange -EndRange $endRange -SubnetMask $subnetMask -Description $ScopeDescription
+}
+
+# Set DHCP options
+# Default gateway
+$defaultGateway = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the default gateway for DHCP", "Default gateway")
+Set-DhcpServerv4OptionValue -ScopeId $scopeId -OptionId 3 -Value $defaultGateway
+
+# Set DNS server
+Set-DhcpServerv4OptionValue -ScopeId $scopeId -OptionId 6 -Value $adpt.IPAddress
+
+# Activate scope
+Set-DhcpServerv4Scope -ScopeId $scopeId -State Active
+
+# Ask for a reboot (y/n)
+if (Read-Host "The server must be rebooted for the changes to take effect. Do you want to reboot now? (Y/N)" -eq "Y") {
+    Restart-Computer -Force
+}
+
+
+
