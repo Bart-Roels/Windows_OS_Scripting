@@ -1,25 +1,18 @@
-Add-Type -AssemblyName Microsoft.VisualBasic
+# Set the domain name and admin credentials
+$domainName = "intranet.mct.be"
+$adminUsername = "administrator@MCT.local"
 
-# Domain name
-$domainName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the domain name (e.g. intranet.mycompany.be)", "Domain name")
+$adminPassword = "P@ssw0rd"
 
-# Check if the necessary role(s) is/are installed. If not, install them.
-$roles = "AD-Domain-Services", "DNS"
-foreach ($role in $roles) {
-    if ((Get-WindowsFeature -Name $role).Installed -ne $true) {
-        Install-WindowsFeature -Name $role -IncludeManagementTools
-    }
+# Install the AD DS role if it's not already installed
+if ((Get-WindowsFeature -Name AD-Domain-Services).Installed -ne $true) {
+    Install-WindowsFeature AD-Domain-Services
 }
 
-# Add domain controller to the domain
-Add-Computer -DomainName $domainName -Credential $domainAdminCreds -Restart -Force
-
-# Promote server to secondary DC in the domain
-Install-ADDSDomainController -DomainName $domainName -Credential $domainAdminCreds -Force:$true -InstallDNS:$true -NoRebootOnCompletion
-
-# Ask for a reboot (y/n)
-if (Read-Host "The server must be rebooted for the changes to take effect. Do you want to reboot now? (Y/N)" -eq "Y") {
-    Restart-Computer -Force
-}
-
+# Promote the server to a domain controller
+Install-ADDSDomainController `
+    -DomainName $domainName `
+    -SafeModeAdministratorPassword (ConvertTo-SecureString -String $adminPassword -AsPlainText -Force) `
+    -InstallDNS:$true `
+    -Force:$true
 
