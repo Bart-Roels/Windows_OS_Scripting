@@ -2,7 +2,7 @@
 Import-Module ActiveDirectory
 
 # Set the new UPN suffix
-$newUPNSuffix = "abc.com"
+$newUPNSuffix = "mct.be"
 
 # Get the current UPN suffixes for the domain
 $domain = Get-ADDomain
