@@ -114,6 +114,9 @@ try {
     # Create DNS reverse lookup zone
     Add-DnsServerPrimaryZone -NetworkId $networkAddress -ReplicationScope "Domain" -DynamicUpdate "Secure"
 
+
+        # register dns-clients --> Pointer record aangemaakt worden
+
     # Network address + mask
     $networkAddressWithMask = $networkAddress.ToString() + "/" + $prefixLength.ToString()
 
@@ -180,10 +183,22 @@ try {
     Set-DhcpServerv4OptionValue -ScopeId $scopeId -OptionId 3 -Value $defaultGateway
 
     # Set DNS server
-    Set-DhcpServerv4OptionValue -ScopeId $scopeId -OptionId 6 -Value $adpt.IPAddress
+    Set-DhcpServerv4OptionValue -OptionId 6 -Value $adpt.IPAddress
+
+    # Set dns domain name
+    $dnsDomainname = $env:USERDNSDOMAIN
+    Set-DhcpServerv4OptionValue -OptionId 15 -Value $dnsDomainname
+
+
+    # DNS 6 --> Server
+    # domain name 15 --> Server 
+    # Server --> 
 
     # Activate scope
     Set-DhcpServerv4Scope -ScopeId $scopeId -State Active
+
+
+
 
     # Ask for a reboot (y/n)
     if (Read-Host "The server must be rebooted for the changes to take effect. Do you want to reboot now? (Y/N)" -eq "Y") {
