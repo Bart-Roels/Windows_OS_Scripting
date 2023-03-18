@@ -1,23 +1,45 @@
 # THIS SCRIPT CREATES A NEW SMB SHARE AND SETS THE ACL PERMISSIONS FOR THE SHARE FOLDER
 # DC 2 
 
-# Set variables
-$shareName = "UserProfiles"
-$sharePath = "C:\UserProfiles"
-$shareDescription = "Shared folder for user profiles"
+# Fileserver
+$fileserver = "WIN17-MS"
 
-# Create the new SMB share
-New-SmbShare -Name $shareName -Path $sharePath -Description $shareDescription -FullAccess Everyone
+$SystemShare = "C$"
+$drive = $SystemShare.replace("$",":")
+$shareName = "Profiles"
+$localPath = "$drive"+ "\" + $shareName
+$path = "\\" + $serverName + "\" +$SystemShare + "\" + $shareName
+
+
+# Check if path exists
+if(Test-Path $path) {
+    Write-Host "The share already exists on the server"
+    return
+}
+else {
+    Write-Host "The share does not exist on the server"
+    Write-Host "Creating the share on the server"
+    New-Item -Path $path Directory -Force | Out-Null
+}
+
+# Check if the share already exists
+if(Get-SmbShare -CimSession $serverName -Name $shareName -ErrorAction SilentlyContinue) {
+    Write-Host "The share already exists on the server"
+    return
+}
+else {
+    Write-Host "The share does not exist on the server"
+    Write-Host "Creating the share on the server"
+    New-SmbShare -CimSession $serverName -Name $shareName -Path $path -FullAccess "Everyone"  | Out-Null
+}
 
 # Set the ACL permissions for the share folder
-$ACL = Get-Acl $sharePath
-$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Administrators","FullControl","Allow")
+$ACL = Get-Acl $path
+# Disable inheritance and remove all inherited permissions
+$ACL.SetAccessRuleProtection($true,$false)
+# Settings full control for the Administrators --> Container Inherit, Object Inherit
+$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Administrators","FullControl","ContainerInherit,ObjectInherit","None","Allow")
 $ACL.SetAccessRule($AccessRule)
-$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("Authenticated Users","ReadAndExecute","Allow")
-$ACL.SetAccessRule($AccessRule)
-Set-Acl $sharePath $ACL
 
-# Set the share access rule protection to "NoPropagateInherit"
-Set-SmbShare -Name $shareName -FolderEnumerationMode AccessBased -FolderEnumerationModeFlags NoAccessBasedEnumeration
-
+# 
 
