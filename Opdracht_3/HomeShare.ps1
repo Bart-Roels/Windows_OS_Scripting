@@ -1,4 +1,7 @@
-$session = New-PSSession -ComputerName <target_computer_name>
+# THIS SCRIPT CREATES A NEW SMB SHARE AND SETS THE ACL PERMISSIONS FOR THE SHARE FOLDER
+# MS Server
+
+$session = New-PSSession -ComputerName WIN17-MS
 
 Invoke-Command -Session $session -ScriptBlock {
     # Define the share name and path

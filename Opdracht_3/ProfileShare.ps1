@@ -1,3 +1,6 @@
+# THIS SCRIPT CREATES A NEW SMB SHARE AND SETS THE ACL PERMISSIONS FOR THE SHARE FOLDER
+# DC 2 
+
 # Set variables
 $shareName = "UserProfiles"
 $sharePath = "C:\UserProfiles"
