@@ -1,52 +1,29 @@
-# Define the share name and path
-$shareName = "Homes"
-# Share path on member server ms17
-$sharePath = "\\ms17\Homes"
+$session = New-PSSession -ComputerName <target_computer_name>
 
-# Create remote session to member server ms17
-$session = New-PSSession -ComputerName ms17
+Invoke-Command -Session $session -ScriptBlock {
+    # Define the share name and path
+    $shareName = "Homes"
+    $sharePath = "C:\Shares\Homes"
 
-# Import the SMB module on the member server
-Import-Module -Name SmbShare -PSSession $session
+    # Create the folder on the server
+    New-Item -ItemType Directory -Path $sharePath -Force
 
-# Create the folder on the member server
-New-Item -ItemType Directory -Path $sharePath -Force -PSSession $session
+    # Define the access rules
+    $accessRules = @()
+    $accessRules += New-Object System.Security.AccessControl.FileSystemAccessRule("Administrators", "FullControl", "Allow")
+    $accessRules += New-Object System.Security.AccessControl.FileSystemAccessRule("Authenticated Users", "ReadAndExecute", "Allow")
 
-# Create the home share
-New-SmbShare -Name $shareName -Path $sharePath -FullAccess "Domain Users" -PSSession $session
+    # Set the NTFS permissions on the folder
+    Set-Acl -Path $sharePath -AclObject (New-Object System.Security.AccessControl.DirectorySecurity -ArgumentList @($null, "AllowInherit", $accessRules, $false))
 
-# Every one full control on the share
-Set-SmbShareAccess -Name $shareName -AccessRight "FullControl" -AccountName "Everyone" -PSSession $session
+    # Create the share with Everyone full control
+    New-SmbShare -Name $shareName -Path $sharePath -FullAccess "Everyone"
 
-# Get the ACL for the shared folder
-$acl = Get-Acl $sharePath -PSSession $session
-
-# Disable inheritance on the folder 
-$acl.SetAccessRuleProtection($true, $false)
-
-# Remove any existing access rules
-$acl.Access | % { $acl.RemoveAccessRule($_) }
-
-# Ntfs permissions on the folder on the member server
-# Administrator full control
-$rule1 = New-Object System.Security.AccessControl.FileSystemAccessRule("Administrator","FullControl","Allow")
-# authenticated users read and execute
-$rule2 = New-Object System.Security.AccessControl.FileSystemAccessRule("Authenticated Users","ReadAndExecute","Allow")
-
-# Add the rules to the ACL
-$acl.AddAccessRule($rule1)
-$acl.AddAccessRule($rule2)
-
-# Set the ACL for the shared folder
-Set-Acl -Path $sharePath -AclObject $acl -PSSession $session
-
-
-
-
-
-
-
-
+    # Disable inheritance on the folder
+    $acl = Get-Acl $sharePath
+    $acl.SetAccessRuleProtection($true, $false)
+    Set-Acl -Path $sharePath -AclObject $acl
+}
 
 
 
