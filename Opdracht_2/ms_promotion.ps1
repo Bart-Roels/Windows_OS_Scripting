@@ -1,4 +1,4 @@
-$session = New-PSSession -ComputerName <target_computer_name>
+$session = New-PSSession -ComputerName WIN17-MS
 
 # Invoke-Command -Session $session -ScriptBlock {
 Invoke-Command -Session $session -ScriptBlock {
@@ -53,14 +53,6 @@ Invoke-Command -Session $session -ScriptBlock {
     Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
     Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
 
-
-    # Set the Control Panel view to Small icons
-    If (!(Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel")) {
-        New-Item -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" | Out-Null
-    }
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" -Name "StartupPage" -Type DWord -Value 1
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\ControlPanel" -Name "AllItemsIconView" -Type DWord -Value 1
-
     # Set the computer name
     Rename-Computer -NewName $ComputerName 
     # Warn user that the computer needs to be restarted
@@ -69,6 +61,13 @@ Invoke-Command -Session $session -ScriptBlock {
     Restart-Computer -Force
 
 }
+
+# Close the session
+Remove-PSSession $session
+
+# Print server is configured
+Write-Host "Server is configured" -ForegroundColor Green
+
 
 
 
