@@ -1,11 +1,11 @@
 # Create OU in Active Directory 
 
 # Open the csv file and add the OU names
-$OUs = Import-Csv -Path "C:\Users\Administrator\Downloads\OU.csv" -Delimiter ";" | Select-Object -Skip 1
+$OUs = Import-Csv -Path "C:\Users\Administrator\Downloads\OU.csv" -Delimiter ";" 
 
 # Loop through the OU names
 foreach ($OU in $OUs) {
-    Write-Host $OU
+
     # Get Path from csv file
     $path = $OU.Path
     # Get DisplayName from csv file
@@ -17,6 +17,7 @@ foreach ($OU in $OUs) {
 
     # Print the OU settings
     Write-Host "=================================="
+    Write-Host $OU
     Write-Host "Creating OU:"
     Write-Host "Path: $path"
     Write-Host "DisplayName: $displayName"
