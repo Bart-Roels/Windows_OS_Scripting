@@ -1,0 +1,8 @@
+Surname;Name;SamAccountName;GivenName;DisplayName;AccountPassword;HomeDrive;HomeDirectory;Path
+Leon;David;Leon.david;Leon.david;Leon.david;P@ssw0rd;H:;\\WIN17-MS\Homes\%username%;OU=Board,OU=Intranet,DC=intranet,DC=mct,DE=be
+Mark;Twix;Mark.Twix;Mark.Twix;Mark.Twix;P@ssw0rd;H:;\\WIN17-MS\Homes\%username%;OU=Board,OU=Intranet,DC=intranet,DC=mct,DE=be
+Stephen ;George;Stephen .George;Stephen .George;Stephen .George;P@ssw0rd;H:;\\WIN17-MS\Homes\%username%;OU=Board,OU=Intranet,DC=intranet,DC=mct,DE=be
+Natalie;Jhon;Natalie.Jhon;Natalie.Jhon;Natalie.Jhon;P@ssw0rd;H:;\\WIN17-MS\Homes\%username%;OU=Board,OU=Intranet,DC=intranet,DC=mct,DE=be
+Addison;Soans;Addison.Soans;Addison.Soans;Addison.Soans;P@ssw0rd;H:;\\WIN17-MS\Homes\%username%;OU=Board,OU=Intranet,DC=intranet,DC=mct,DE=be
+Mark;Davis ;Mark.Davis ;Mark.Davis ;Mark.Davis ;P@ssw0rd;H:;\\WIN17-MS\Homes\%username%;OU=Board,OU=Intranet,DC=intranet,DC=mct,DE=be
+Brent;Howson;Brent.Howson;Brent.Howson;Brent.Howson;P@ssw0rd;H:;\\WIN17-MS\Homes\%username%;OU=Board,OU=Intranet,DC=intranet,DC=mct,DE=be
