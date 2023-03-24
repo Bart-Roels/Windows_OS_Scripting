@@ -1,4 +1,4 @@
-$session = New-PSSession -ComputerName <target_computer_name>
+$session = New-PSSession -ComputerName WIN17-MS
 
 Invoke-Command -Session $session -ScriptBlock {
     # Define the share name and path
