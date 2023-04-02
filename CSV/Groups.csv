@@ -1,0 +1,3 @@
+Path;Name;DisplayName;Description;GroupCategory;GroupScope
+OU=Board,OU=Intranet,DC=intranet,DC=mct,DC=be;DG-board;DG-board;DG-board;Security;DomainLocal
+OU=Board,OU=Intranet,DC=intranet,DC=mct,DC=be;GG-board;GG-board;GG-board;Security;Global
