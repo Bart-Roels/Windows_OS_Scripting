@@ -118,26 +118,29 @@ function installPrinter {
 
         # Add the printer
         Add-Printer -Name $printerName -DriverName $printerDriver -PortName $printerPort
-        Write-Host "> The printer has been added." -ForegroundColor Green
+        Write-Host "The printer has been added." -ForegroundColor Green
         
         # Share the printer
         $ans = Read-Host -Prompt "Do you want to share the printer? (Y/N)"
         while ($True) {
             if ($ans -eq "y") {
-                $shareName = Read-Host -Prompt "Enter the share name:"
+                # Ask for the share name
+                $shareName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the share name", "sharename")
                 while ($shareName -eq "") {
-                    Write-Host "> Error: The share name cannot be empty." -ForegroundColor Red
+                    Write-Host "Error: The share name cannot be empty." -ForegroundColor Red
                     $shareName = Read-Host -Prompt "Enter the share name:"
                 }
+                # Ask for the share location
                 $shareLocation = Read-Host -Prompt "Enter the location of the printer:"
                 while ($shareLocation -eq "") {
                     Write-Host "> Error: The location of the printer cannot be empty." -ForegroundColor Red
                     $shareLocation = Read-Host -Prompt "Enter the location of the printer:"
                 }
+                # Share the printer
                 Set-Printer -Name $printerName -Location $shareLocation -Shared $True -ShareName $shareName
-                Write-Host "> The printer is shared as $shareName." -ForegroundColor Green
-                Write-Host "> The printer is located at $printerLocation." -ForegroundColor Green
-                Write-Host "> The printer is available at \\$env:COMPUTERNAME\$shareName." -ForegroundColor Green
+                Write-Host "The printer is shared as $shareName." -ForegroundColor Green
+                Write-Host "The printer is located at $printerLocation." -ForegroundColor Green
+                Write-Host "The printer is available at \\$env:COMPUTERNAME\$shareName." -ForegroundColor Green
                 break
             }
             elseif ($ans -eq "n") {
