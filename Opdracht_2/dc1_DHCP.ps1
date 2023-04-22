@@ -112,10 +112,16 @@ try {
     $networkAddress = Get-NetworkAddress -InterfaceAlias "Ethernet0" -IPAddress $adpt.IPAddress -SubnetMask $netmask
 
     # Create DNS reverse lookup zone
-    Add-DnsServerPrimaryZone -NetworkId $networkAddress -ReplicationScope "Domain" -DynamicUpdate "Secure"
+    Add-DnsServerPrimaryZone -NetworkId $networkAddress -ReplicationScope "Forest" -DynamicUpdate "Secure"
 
 
-        # register dns-clients --> Pointer record aangemaakt worden
+    # register dns-clients --> Pointer record aangemaakt worden
+    register-dnsclient
+
+
+    #
+    # REnenaming the default site and adding the subnet
+    #
 
     # Network address + mask
     $networkAddressWithMask = $networkAddress.ToString() + "/" + $prefixLength.ToString()
@@ -128,14 +134,37 @@ try {
     $defaultSite | Rename-ADObject -NewName $siteName -ErrorAction Stop
     New-ADReplicationSubnet -Name $networkAddressWithMask -Site $siteName -ErrorAction Stop
 
+    # 
+    # DHCP
+    #
+
+
     # Check if DHCP Server Role is installed, if not install it
     $DHCPRole = Get-WindowsFeature -Name DHCP -ErrorAction SilentlyContinue
     if (!$DHCPRole) {
-        Install-WindowsFeature -Name DHCP -IncludeManagementTools -ErrorAction Stop
+        Install-WindowsFeature -Name DHCP -IncludeManagementTools -ErrorAction SilentlyContinue
     }
 
-    # Authorize DHCP server to give out IP addresses
-    Add-DhcpServerInDC -ErrorAction Stop
+    #
+    # Authorizing DHCP server in AD
+    #
+
+    $eth0 = Get-NetAdapter -Physical | Where-Object { $_.PhysicalMediaType -match "802.3" -and $_.status -eq "up" }
+    $ip = $eth0 | Get-NetIPAddress -AddressFamily IPv4
+
+    if (Get-DhcpServerInDC | Where-Object { $_.IPAddress -match $ip.IPAddress }) {
+        Write-Output "DHCP server already authorized!"
+    }
+    else {
+        Write-Output "Authorizing the DHCP server in AD ..."
+        
+        Add-DhcpServerInDC -IPAddress $ip.ipaddress -DnsName $UserDNSDomain
+
+        #Notify Server Manager that post-install DHCP configuration is complete
+
+        Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
+    }
+
 
     # Remove DHCP authorization warning
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\dhcp\Parameters" -Name "EnableWarning" -Value 1 -ErrorAction Stop
@@ -148,8 +177,6 @@ try {
     $subnetMask = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the subnet mask for DHCP", "Subnet mask")
     $startExcludedRange = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the start excluded range for DHCP", "Start excluded range")
    
-
-
     # Ip range 192.168.1.1 --> Pfsense
     # Ip range 192.168.1.1 , 192.168.1.254 --> Pfsense + 253 clients
     # Exclude 192.168.1.1 , 192.168.1.10
@@ -157,7 +184,7 @@ try {
     # Check if excluded range is empty
     if ($startExcludedRange -ne "" -and $endExcludedRange -ne "") {
         # Create DHCP scope
-        Add-DhcpServerv4Scope -Name $ScopeName -StartRange $startRange -EndRange $endRange -SubnetMask $subnetMask -Description $ScopeDescription 
+        Add-DhcpServerv4Scope -Name $ScopeName -StartRange $startRange -EndRange $endRange -SubnetMask $subnetMask -Description $ScopeDescription -State active
 
         # Get DHCP scope by name
         $scope = Get-DhcpServerv4Scope -ComputerName "DC1" 
@@ -180,7 +207,7 @@ try {
     # Set DHCP options
     # Default gateway
     $defaultGateway = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the default gateway for DHCP", "Default gateway")
-    Set-DhcpServerv4OptionValue -ScopeId $scopeId -OptionId 3 -Value $defaultGateway
+    Set-DhcpServerv4OptionValue -ScopeId $scopeId -Router $defaultGateway
 
     # Set DNS server
     Set-DhcpServerv4OptionValue -OptionId 6 -Value $adpt.IPAddress
@@ -196,8 +223,6 @@ try {
 
     # Activate scope
     Set-DhcpServerv4Scope -ScopeId $scopeId -State Active
-
-
 
 
     # Ask for a reboot (y/n)
