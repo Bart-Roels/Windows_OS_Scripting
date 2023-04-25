@@ -1,5 +1,5 @@
 Path;Display Name;Name;Description
-DC=mct,DC=intranet,DC=be;Intranet ;Intranet ;Hoofd OU 
+DC=mct,DC=intranet,DC=be;Intranet;Intranet;Hoofd OU 
 OU=Intranet,DC=mct,DC=intranet,DC=be;Board;Board;Board OU
 OU=Intranet,DC=mct,DC=intranet,DC=be;Engineering;Engineering;Engineering OU
 OU=Intranet,DC=mct,DC=intranet,DC=be;Finance;Finance;Finance OU 
