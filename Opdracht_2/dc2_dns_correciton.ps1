@@ -2,7 +2,7 @@
 # Correcting the DNS servers on the active ethernet (802.3) network adapter
 #
 
-$DNSServers = @("192.168.1.2", "192.168.1.3")
+$DNSServers = @("192.168.1.3", "192.168.1.2")
 
 $eth0 = Get-NetAdapter -Physical | Where-Object { $_.PhysicalMediaType -match "802.3" -and $_.status -eq "up" }
 if (!$eth0) {

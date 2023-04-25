@@ -86,193 +86,195 @@ function Get-NetworkAddress {
 
 ### MAIN SCRIPT 
 
-try {
 
-    # Get computername and domain
-    $ComputerName=$env:COMPUTERNAME
-    $UserDNSDomain=$env:USERDNSDOMAIN.ToLower()
+# Get computername and domain
+$ComputerName=$env:COMPUTERNAME
+$UserDNSDomain=$env:USERDNSDOMAIN.ToLower()
 
 
-    #
-    # Reverrse lookup zone
-    #
+#
+# Reverrse lookup zone
+#
 
-    # Get subnets from eth0 adapter
-    $adpt = Get-NetIPAddress -InterfaceAlias "Ethernet0" -AddressFamily IPv4 
-    if (!$adpt) {
-        throw "Could not retrieve IPv4 address information for Ethernet0 adapter" -ForegroundColor Red
-    }
+# Get subnets from eth0 adapter
+$adpt = Get-NetIPAddress -InterfaceAlias "Ethernet0" -AddressFamily IPv4 
+if (!$adpt) {
+    throw "Could not retrieve IPv4 address information for Ethernet0 adapter" 
+}
 
-    # Prefix length
-    $prefixLength = $adpt.PrefixLength
 
-    # Calculate network address based on IP address and subnet mask
-    # Get prefix length from subnet mask
-    $prefixLength = $adpt.PrefixLength
-    # Get netmask from prefix length
-    $netmask = CIDRToNetMask -PrefixLength $prefixLength
+
+# Calculate network address based on IP address and subnet mask
+$prefixLength = $adpt.PrefixLength
+write-host "Prefix length: $prefixLength" -ForegroundColor Green
+# Get netmask from prefix length
+$netmask = CIDRToNetMask -PrefixLength $prefixLength
+write-host "Netmask: $netmask" -ForegroundColor Green
+# Get network address based on IP address and subnet mask
+$networkAddress = Get-NetworkAddress -InterfaceAlias "Ethernet0" -IPAddress $adpt.IPAddress -SubnetMask $netmask
+write-host "Network address: $networkAddress" -ForegroundColor Green
+
+Get-DnsServerZone -ComputerName $ComputerName -ErrorAction SilentlyContinue
+
+# ask for console input if the zone is in the list
+$zoneName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the reverse lookup zone name (e.g. 10.in-addr.arpa)", "Reverse lookup zone name")
+
+# Check if reverse lookup zone already exists
+$zoneExists = Get-DnsServerZone -Name $zoneName -ComputerName $ComputerName -ErrorAction SilentlyContinue
+
+# If the input create a reverse lookup zone
+if($zoneName -eq "") {
+    Write-Host "No reverse lookup zone name entered" -ForegroundColor Yellow
+
+    # Show that reverse lookup zone does not exist and continue script in red
+    Write-Host "Reverse lookup zone does not exist for $zoneName" -ForegroundColor Red
 
     # Get network address based on IP address and subnet mask
-    $networkAddress = Get-NetworkAddress -InterfaceAlias "Ethernet0" -IPAddress $adpt.IPAddress -SubnetMask $netmask
-
+       
     # Create DNS reverse lookup zone
     Add-DnsServerPrimaryZone -NetworkId $networkAddress -ReplicationScope "Forest" -DynamicUpdate "Secure"
-
+ 
     # register dns-clients --> Pointer record aangemaakt worden
     register-dnsclient
+ 
+    Write-Host "DNS reverse lookup zone created for $networkAddress/$prefixLength" -ForegroundColor Green  
 
+}
+else {
 
-    Write-Host "DNS reverse lookup zone created for $networkAddress/$prefixLength" -ForegroundColor Green
-        
-
-
-    #
-    # Renaming Default-First-Site-Name + assigning the subnet
-    #
-
-
-
-    # Prompt user for site name
-    $newSiteName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the first site name (e.g. site1)", "Site name")
-
-    # Network address + mask
-    $networkAddressWithMask = $networkAddress.ToString() + "/" + $prefixLength.ToString()
-
-    if ($ADReplicationSite=Get-ADReplicationSite "Default-First-Site-Name" -ErrorAction SilentlyContinue)
-    {
-        Write-Output "Renaming Default-First-Site-Name ..."
-        $ADReplicationSite | Rename-ADObject -NewName $newSiteName
-        Get-ADReplicationSite $newSiteName | Set-ADReplicationSite -Description $newSiteName
-        New-ADReplicationSubnet -Name $networkAddressWithMask -Site $newSiteName -Description $newSiteName -Location $newSiteName
-    }
-    else
-    {
-        Write-Output "Default-First-Site-Name already renamed!"
-    }     
-
-
-
-
-    #
-    # Creating DHCP scope
-    #
-
-
-  
-    # Check if DHCP Server Role is installed, if not install it
-    $WindowsFeature="DHCP"
-    if (Get-WindowsFeature $WindowsFeature -ComputerName $ComputerName | Where-Object { $_.installed -eq $false })
-    {
-        Write-Output "Installing $WindowsFeature ..."
-        Install-WindowsFeature $WindowsFeature -ComputerName $ComputerName -IncludeManagementTools
-    }
-    else
-    {
-        Write-Output "$WindowsFeature already installed ..."
-    }
-
-
-    #
-    # Authorizing DHCP server in AD
-    #
-
-
-    # Get IPv4 address of eth0 adapter
-
-    $eth0 = Get-NetAdapter -Physical | Where-Object { $_.PhysicalMediaType -match "802.3" -and $_.status -eq "up" }
-    $ip = $eth0 | Get-NetIPAddress -AddressFamily IPv4
-
-    # Authorize DHCP server in AD
-    if (Get-DhcpServerInDC | Where-Object { $_.IPAddress -match $ip.IPAddress }) {
-        Write-Output "DHCP server already authorized!"
+    if($zoneExists) {
+        Write-Host "Reverse lookup zone already exists for $zoneName" -ForegroundColor Green
     }
     else {
-        Write-Output "Authorizing the DHCP server in AD ..."
-        
-        Add-DhcpServerInDC -IPAddress $ip.ipaddress -DnsName $UserDNSDomain
-
-        #Notify Server Manager that post-install DHCP configuration is complete
-
-        Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
+        Write-Host "Reverse lookup zone does not exist for $zoneName" -ForegroundColor Red
     }
+       
+}
 
-    # Remove DHCP authorization warning
-    Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\dhcp\Parameters" -Name "EnableWarning" -Value 1 -ErrorAction Stop
+#
+# Renaming Default-First-Site-Name + assigning the subnet
+#
+
+write-host "Renaming Default-First-Site-Name + assigning the subnet" -ForegroundColor Yellow
+# Network address + mask
+$networkAddressWithMask = $networkAddress.ToString() + "/" + $prefixLength.ToString()
+
+# Check if Default-First-Site-Name exists and show no error if it does not exist
+if ($ADReplicationSite=Get-ADReplicationSite "Default-First-Site-Name" -ErrorAction SilentlyContinue)
+{
+    Write-Output "Renaming Default-First-Site-Name ..."
+    $newSiteName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the first site name (e.g. site1)", "Site name")
+    $ADReplicationSite | Rename-ADObject -NewName $newSiteName
+    Get-ADReplicationSite $newSiteName | Set-ADReplicationSite -Description $newSiteName
+    New-ADReplicationSubnet -Name $networkAddressWithMask -Site $newSiteName -Description $newSiteName -Location $newSiteName
+}
+else
+{
+    Write-Output "Default-First-Site-Name already renamed!"
+}
 
 
-    # Prompt user for DHCP scope details
-    $ScopeName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the scope name for DHCP", "Scope name")
+$eth0=Get-NetAdapter -Physical | Where-Object { $_.PhysicalMediaType -match "802.3"-and $_.status -eq "up"}
+$ip=$eth0 | Get-NetIPAddress -AddressFamily IPv4
+
+#
+# Install the DHCP Server Role on DC1
+#
+# Check if DHCP Server Role is installed, if not install it
+$WindowsFeature="DHCP"
+if (Get-WindowsFeature $WindowsFeature -ComputerName $ComputerName | Where-Object { $_.installed -eq $false })
+{
+    Write-Output "Installing $WindowsFeature ..."
+    Install-WindowsFeature $WindowsFeature -ComputerName $ComputerName -IncludeManagementTools
+}
+else
+{
+    Write-Output "$WindowsFeature already installed ..." 
+}
+
+
+#
+# Authorizing DHCP server in AD
+#
+if (Get-DhcpServerInDC | Where-Object { $_.IPAddress -match $ip.IPAddress })
+{
+    Write-Output "DHCP server already authorized!"
+}
+else
+{
+    Write-Output "Authorizing the DHCP server in AD ..."
+        
+    Add-DhcpServerInDC -IPAddress $ip.ipaddress -DnsName $UserDNSDomain
+
+    #Notify Server Manager that post-install DHCP configuration is complete
+
+    Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
+}
+
+
+# Remove DHCP authorization warning
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Services\dhcp\Parameters" -Name "EnableWarning" -Value 1 -ErrorAction Stop
+
+
+# Prompt user for DHCP scope details
+$ScopeName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the scope name for DHCP", "Scope name")
+   
+# Ip range 192.168.1.1 --> Pfsense
+# Ip range 192.168.1.1 , 192.168.1.254 --> Pfsense + 253 clients
+# Exclude 192.168.1.1 , 192.168.1.10
+
+# Check if dhcp scope exists by name
+$scopeExists = Get-DhcpServerv4Scope -ComputerName $ComputerName  -ErrorAction SilentlyContinue
+
+if($scopeExists) {
+    # Show that dhcp scope already exists and continue script in green
+    Write-Host "DHCP scope already exists for $ScopeName" -ForegroundColor Green
+}
+else {
     $ScopeDescription = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the scope description for DHCP", "Scope description")
     $startRange = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the startrange for DHCP (add all ip's in range and then exclude)", "start range")
     $endRange = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the endrange for DHCP", "End range")
-    $subnetMask = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the subnet mask for DHCP", "Subnet mask")
+    $subnetMask = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the subnetmask for DHCP eg", "Subnet mask")
     $startExcludedRange = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the start excluded range for DHCP", "Start excluded range")
-   
-    # Ip range 192.168.1.1 --> Pfsense
-    # Ip range 192.168.1.1 , 192.168.1.254 --> Pfsense + 253 clients
-    # Exclude 192.168.1.1 , 192.168.1.10
+    $endExcludedRange = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the end excluded range for DHCP", "End excluded range")
 
-    # Check if excluded range is empty
-    if ($startExcludedRange -ne "" -and $endExcludedRange -ne "") {
-        # Create DHCP scope
-        Add-DhcpServerv4Scope `
-        -Computername $ComputerName `
-        -Name $ScopeName `
-        -Description $ScopeDescription `
-        -StartRange $startRange `
-        -EndRange $endRange `
-        -SubnetMask $subnetMask `
-        -LeaseDuration 8:0:0:0 `
-        -State Active
-    
-        # Get DHCP scope by name
-        $scope = Get-DhcpServerv4Scope -ComputerName $ComputerName -Name $ScopeName
+    # Show that dhcp scope does not exist and continue script in red
+    Write-Host "DHCP scope does not exist for $ScopeName" -ForegroundColor Red
 
-        Write-Host "Scope $ScopeName created" -ForegroundColor Green
-        Write-Host "Adding exclusion range $startExcludedRange - $endExcludedRange to DHCP scope $ScopeName" -ForegroundColor Green
+    # Get network address based on IP address and subnet mask
+    $networkAddress = $ip.IPAddress
+    $prefixLength = $ip.PrefixLength
 
-        # Check if DHCP scope exists 
-        if ($scope -ne $null) {
-            # Get DHCP scope ID
-            $scopeId = $scope.ScopeId
-            # Add exclusion range to DHCP scope  
-            Add-Dhcpserverv4ExclusionRange `
-            -Computername $ComputerName `
-            -ScopeID $scopeId `
-            -StartRange $startExcludedRange `
-            -EndRange $endExcludedRange
+    # Create DHCP scope
+    Add-DhcpServerv4Scope `
+    -Computername $ComputerName `
+    -Name $ScopeName `
+    -Description $ScopeDescription `
+    -StartRange $startRange `
+    -EndRange $endRange `
+    -SubnetMask $subnetMask `
+    -LeaseDuration 8:0:0:0 `
+    -State Active
+        
+    # Get DHCP scope by name
+    $scope = Get-DhcpServerv4Scope -ComputerName $ComputerName
 
-            Write-Host "Exclusion range $startExcludedRange - $endExcludedRange added to DHCP scope $ScopeName" -ForegroundColor Green
+    $scopeId = $scope.ScopeId
 
-        }
-        else {
-            Write-Host "Could not find DHCP scope with name $ScopeName" -ForegroundColor Red
-        }
+    Add-Dhcpserverv4ExclusionRange `
+    -Computername $ComputerName `
+    -ScopeID $scopeId `
+    -StartRange $excludeStartRange `
+    -EndRange $excludeEndRange
 
-    }
-    else {
 
-        # Info
-        write-host "Excluded range is empty" -ForegroundColor Yellow
-
-        # Create DHCP scope
-        Add-DhcpServerv4Scope `
-        -Computername $ComputerName `
-        -Name $ScopeName `
-        -Description $ScopeDescription `
-        -StartRange $startRange `
-        -EndRange $endRange `
-        -SubnetMask $subnetMask `
-        -LeaseDuration 8:0:0:0 `
-        -State Active
-      
-        # Output DHCP scope created
-        Write-Host "Scope $ScopeName created" -ForegroundColor Green
-    }
+    Write-Host "Scope $ScopeName created" -ForegroundColor Green
+    Write-Host "Adding exclusion range $startExcludedRange - $endExcludedRange to DHCP scope $ScopeName" -ForegroundColor Green
 
     # Set DHCP options
     # Default gateway
     $defaultGateway = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the default gateway for DHCP", "Default gateway")
+
 
     # Check if default gateway is empty and correct ip format otherwise ask again
     while ($defaultGateway -eq "" -or $defaultGateway -notmatch "\b(?:\d{1,3}\.){3}\d{1,3}\b") {
@@ -285,26 +287,35 @@ try {
     -ScopeID $scopeId `
     -Router $defaultGateway
 
-    $DNSServers=@("192.168.1.2","192.168.1.3")
-    Set-DhcpServerv4OptionValue `
-    -ComputerName $ComputerName ` 
-    -DnsServer $DNSServers ` 
-    -DNSDomain $UserDNSDomain ` 
-    -Force 
+
 
     # Activate scope
     Set-DhcpServerv4Scope -ScopeId $scopeId -State Active
-
-
-    # Ask for a reboot (y/n)
-    if (Read-Host "The server must be rebooted for the changes to take effect. Do you want to reboot now? (Y/N)" -eq "Y") {
-        Restart-Computer -Force
-    }
-}
-catch {
-    Write-Error $_.Exception.Message
 }
 
+# DNS servers
+$DNSServer1 = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the first DNS server for DHCP", "DNS server 1")
+$DNSServer2 = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the second DNS server for DHCP", "DNS server 2")
+    
+# Combine DNS servers with comma
+$DNSServers = $DNSServer1,$DNSServer2
+
+Write-Host $ComputerName
+Write-Host $DNSServers
+Write-Host $UserDNSDomain
+    
+#
+# Configuring DHCP Server Options
+#
+
+Set-DhcpServerv4OptionValue `
+-ComputerName $ComputerName ` -DnsServer $DNSServers ` -DNSDomain $UserDNSDomain ` -Force 
 
 
+# Ask for reboot 
+$reboot = [Microsoft.VisualBasic.Interaction]::MsgBox("Reboot server?", "YesNo", "Reboot server")
+# If user clicks yes reboot server
+if ($reboot -eq "Yes") {
+    Restart-Computer -ComputerName $ComputerName
+}
 
