@@ -4,7 +4,7 @@
 $ComputerName=$env:COMPUTERNAME
 $Credential=$env:USERNAME
 $domainCredential="$env:USERDOMAIN\$Credential"
-$secondDC="win00-DC2"
+$secondDC="DC2"
 $UserDNSDomain=$env:USERDNSDOMAIN.tolower()
 
 $remoteSession=New-PSSession -ComputerName $secondDC -Credential $domainCredential

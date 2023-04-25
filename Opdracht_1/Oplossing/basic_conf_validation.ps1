@@ -1,50 +1,61 @@
 
-# Prompt user for ip and validate it
-do {
-    $validIP = $true
-    $IPAddress = Read-Host "Enter IP address (e.g. 192.168.1.100)"
-    try {
-        [System.Net.IPAddress]::Parse($IPAddress) | Out-Null
-    }
-    catch {
-        Write-Host "Invalid IP address entered. Please enter a valid IP address."
-        $validIP = $false
-    }
-} until ($validIP)
-
-# Prompt user for input ip settings gateway and validate it
-do {
-    $validGateway = $true
-    $Gateway = Read-Host "Enter default gateway (e.g. 192.168.1.1)"
-    try {
-        [System.Net.IPAddress]::Parse($Gateway) | Out-Null
-    }
-    catch {
-        Write-Host "Invalid default gateway entered. Please enter a valid default gateway."
-        $validGateway = $false
-    }
-} until ($validGateway)
-
-# Ask for the subnet prefix and dns servers
-$Prefix = Read-Host "Enter subnet prefix (e.g. 24)"
-$dnsServer1 = Read-Host "Enter the primary DNS server for this server"
-$dnsServer2 = Read-Host "Enter the secondary DNS server for this server"
-
 #
 # Get the active ethernet (802.3) network adapter and set the IP configuration
 #
+
 $eth0=Get-NetAdapter -Physical | Where-Object { $_.PhysicalMediaType -match "802.3"-and $_.status -eq "up"}
+$eth0_ip = Get-NetIPInterface -InterfaceIndex $eth0.ifIndex -AddressFamily IPv4
+
 if (!$eth0)
 {
     Write-Output "No connected ethernet interface found ! Please connect cable ..."
     exit(1)
 }
 
+Write-Host "Configuring network interface $($eth0.Name) ..." -ForegroundColor Yellow
 
-$eth0_ip=Get-NetIPInterface -InterfaceIndex $eth0.ifIndex -AddressFamily IPv4
+
+#
+# Ask for IP settigs
+#
+
+
+# Prompt user for ip and validate it
+do {
+    $validIP = $true
+    $IPAddress = Read-Host "Enter IP address (e.g. 192.168.1.2)"
+    try {
+        [System.Net.IPAddress]::Parse($IPAddress) | Out-Null
+    }
+    catch {
+        Write-Host "Invalid IP address entered. Please enter a valid IP address." 
+        $validIP = $false
+    }
+} until ($validIP)
+
+# Prompt user for input ip settings gateway and validate it
+do {
+    $validIP = $true
+    $Gateway = Read-Host "Enter gateway (e.g. 192.168.1.1)"
+    try {
+        [System.Net.IPAddress]::Parse($Gateway) | Out-Null
+    }
+    catch {
+        Write-Host "Invalid IP address entered. Please enter a valid IP address." 
+        $validIP = $false
+    }
+} until ($validIP)
+
+# Ask for the subnet prefix and dns servers and validate them
+$Prefix = Read-Host "Enter subnet prefix (e.g. 24)"
+$dnsServer1 = Read-Host "Enter the primary DNS server for this server"
+$dnsServer2 = Read-Host "Enter the secondary DNS server for this server"
+
+
 #
 # if DHCP is enabled
 #
+
 if ($eth0_ip.dhcp) {
     # Disable DHCP
     $eth0_ip | Set-NetIPInterface -DHCP Disabled
@@ -121,7 +132,8 @@ $newComputerName = Read-Host "Enter the computer name (e.g. server1)"
 
 if ($currentComputerName -eq $newComputerName)
 {
-    Write-Output "Computer Name already set!"
+    # computer name is already set with green color
+    Write-Output "Computer name $currentComputerName already set!" -ForegroundColor Green
 }
 else
 {
