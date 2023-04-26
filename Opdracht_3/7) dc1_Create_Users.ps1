@@ -1,7 +1,7 @@
 # Create users in Active Directory
 
 # Open the csv file and add the user names
-$userList = Import-Csv -Path "C:\Users\Administrator\Downloads\Users.csv" -Delimiter ";"
+$userList = Import-Csv -Path "C:\Users\Administrator\Downloads\Board.csv" -Delimiter ";"
 
 # Loop through the user names
 foreach ($user in $userList) {
@@ -16,15 +16,17 @@ foreach ($user in $userList) {
     # Get UserPrincipalName from csv file
     $userPrincipalName = $user.UserPrincipalName
     # Get Password from csv file
-    $password  = $user.Password
+    $password  = $user.AccountPassword
     # Get Path from csv file
     $path = $user.Path
     # Get home directory from csv file
-    $homeDirectory = $user.HomeDirectory
+    $homeDirectory = "\\MS\Homes\$samAccountName"
+    $homeDrive = $user.HomeDrive
+    # Drive letter
+
 
     # Get upn suffix from server
     $upnSuffix = Get-ADForest | Select-Object -ExpandProperty UPNSuffixes
-
 
     # User principal name
     $userPrincipalName = "$samAccountName@$upnSuffix"
@@ -36,16 +38,15 @@ foreach ($user in $userList) {
     Write-Host "=================================="
     Write-Host $user
 
-    write-host "Creating user:"
-    Write-Host "Name: $name"
-    Write-Host $lastname
-    Write-Host "Surname: $surname"
+    write-host "Creating user:" -ForegroundColor Yellow
+    Write-Host "FirstName (name): $name"
+    Write-Host "Lastname (lastname): "$lastname
     Write-Host "DisplayName: $displayName"
     Write-Host "SamAccountName: $samAccountName"
     Write-Host "UserPrincipalName: $userPrincipalName"
     Write-Host "Password: $password"
     Write-Host "Path: $path"
-    Write-Host "DriveLetter: $HomeDrive"
+    Write-Host "DriveLetter: $homeDrive"
     Write-Host "HomeDirectory: $homeDirectory"
     Write-Host "=================================="
 
@@ -57,28 +58,35 @@ foreach ($user in $userList) {
     }
     catch
     {
-    	Write-Output "Making $User.Name in $Path ..." -ForegroundColor Green
+    	    
+        
+        Write-Output "Making $User.Name in $Path ..." 
 
-        New-ADUser -Name $name -GivenName $name -Surname $lastname -DisplayName $displayName -SamAccountName $samAccountName -UserPrincipalName $userPrincipalName -Path $path -HomeDirectory $homeDirectory -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) -Enabled $true -ChangePasswordAtLogon $false -PasswordNeverExpires $true -ErrorAction Stop
+        New-ADUser -Name $name -SamAccountName $samAccountName -UserPrincipalName $userPrincipalName -DisplayName $displayName -GivenName $givenName -Surname $lastname -HomeDrive $homeDrive -HomeDirectory $homeDirectory -Path $path  -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) -Enabled:$true
 	    
+
         New-Item -Path $homeDirectory -type directory -Force
     
         $acl=Get-Acl $homeDirectory
 
         # Enable inheritance and copy permissions
         $acl.SetAccessRuleProtection($False, $True)
-
+ 
         # Setting Modify for the User account
         $Identity=$userPrincipalName
         $Permission="Modify"
-    	$Inheritance="ContainerInherit, ObjectInherit"
+    	    $Inheritance="ContainerInherit, ObjectInherit"
         $Propagation="None"
         $AccessControlType="Allow"
-        $rule=New-Object System.Security.AccessControl.FileSystemAccessRule($Identity,$Permission,$Inheritance,$Propagation,$AccessControlType)
+        $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($Identity,$Permission,$Inheritance,$Propagation,$AccessControlType)
 	    $acl.AddAccessRule($rule)
  
 	    Set-Acl $HomeDirectory $acl
 	}
+
+    Write-Host "User created" -ForegroundColor Green
 }
+
+
 
 
