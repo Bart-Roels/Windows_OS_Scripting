@@ -1,25 +1,40 @@
-# Prompt for the name of the printer to remove
-$printerName = Read-Host "Enter the name of the printer to remove"
+#
+# Removing a printer
+#
+$PrinterName="HP Laserjet 4050"
 
-# Get the printer object
-$printer = Get-Printer -Name $printerName -ErrorAction SilentlyContinue
-if ($printer -eq $null) {
-    Write-Host "Printer '$printerName' not found" -ForegroundColor Red
-    return
+try
+{
+    Write-Host "Removing printer $PrinterName ..."
+    Get-Printer -Name $PrinterName -ErrorAction Stop | Out-Null
+    Remove-Printer -Name $PrinterName
+}
+catch
+{
+    Write-Host "Printer $PrinterName doesn't exist ..." -ForegroundColor Red
 }
 
-# Remove the printer
-Write-Host "Removing printer '$printerName'..."
-Remove-Printer -InputObject $printer
-
-# Get the printer ports and check if they are associated with the printer being removed
-$ports = Get-PrinterPort
-foreach ($port in $ports) {
-    if ($port.PrinterName -eq $printerName) {
-        # Remove the port if it is not in use
-        if ($port.Usage -eq "None") {
-            Write-Host "Removing unused printer port '$($port.Name)'..."
-            Remove-PrinterPort -InputObject $port
-        }
+#
+# Removing a printer port
+#
+$PrinterPort="172.23.80.3_2"
+try
+{
+    Write-Host "Removing printer port $PrinterPort ..."
+    Get-PrinterPort -Name $PrinterPort -ErrorAction Stop | Out-Null
+    try
+    {
+        Remove-PrinterPort -Name $PrinterPort -ErrorAction Stop
     }
+    catch
+    {
+    # Printer port is in use …
+        Write-Host "Unable to remove printer port '$PrinterPort'" -ForegroundColor Red
+    } 
 }
+catch
+{
+# Printer port is in use …
+    Write-Host "Printer port $PrinterPort doesn't exist ..." -ForegroundColor Red
+}
+
