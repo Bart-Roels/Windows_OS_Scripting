@@ -1,9 +1,9 @@
 Path;DisplayName;Name;Description
-DC=mct,DC=intranet,DC=be;Intranet;Intranet;Hoofd OU 
-OU=Intranet,DC=mct,DC=intranet,DC=be;Board;Board;Board OU
-OU=Intranet,DC=mct,DC=intranet,DC=be;Engineering;Engineering;Engineering OU
-OU=Intranet,DC=mct,DC=intranet,DC=be;Finance;Finance;Finance OU 
-OU=Intranet,DC=mct,DC=intranet,DC=be;HR;HR;HR OU 
-OU=Intranet,DC=mct,DC=intranet,DC=be;Manufacturing;Manufacturing;Manufacturing OU
-OU=Intranet,DC=mct,DC=intranet,DC=be;Martking;Marketing;Marketing OU
-OU=Intranet,DC=mct,DC=intranet,DC=be;Projects;Projects ;Projects OU 
+DC=intranet,DC=mct,DC=be;Intranet;Intranet;Hoofd OU 
+OU=Intranet,DC=intranet,DC=mct,DC=be;Board;Board;Board OU
+OU=Intranet,DC=intranet,DC=mct,DC=be;Engineering;Engineering;Engineering OU
+OU=Intranet,DC=intranet,DC=mct,DC=be;Finance;Finance;Finance OU 
+OU=Intranet,DC=intranet,DC=mct,DC=be;HR;HR;HR OU 
+OU=Intranet,DC=intranet,DC=mct,DC=be;Manufacturing;Manufacturing;Manufacturing OU
+OU=Intranet,DC=intranet,DC=mct,DC=be;Martking;Marketing;Marketing OU
+OU=Intranet,DC=intranet,DC=mct,DC=be;Projects;Projects ;Projects OU 

@@ -28,15 +28,12 @@ foreach ($OU in $OUs) {
     Write-Host "Name: $name"
     Write-Host "=================================="
 
-    try
-	{
-		Get-ADOrganizationalUnit -Identity $Identity | Out-Null
-		Write-Output "OU $Name already exists in $Path !" -ForegroundColor Red
-	}
-	catch
-	{
-		Write-Output "Making OU $Name in $Path ..." 
-		New-ADOrganizationalUnit -Name $name -DisplayName $displayName  -Description $description -Path $path
-	}
+    try {
+        New-ADOrganizationalUnit -Name $name -Path $path -Description $description -DisplayName $displayName -ErrorAction Stop
+    }
+    catch {
+        # Print the error message in red
+        Write-Host $_.Exception.Message -ForegroundColor Red
+    }
 
 }
