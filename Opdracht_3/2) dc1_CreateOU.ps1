@@ -20,8 +20,8 @@ foreach ($OU in $OUs) {
 
     # Print the OU settings
     Write-Host "=================================="
-    Write-Host $OU
-    Write-Host "Creating OU:"
+    Write-Host "Input:" $OU
+    Write-Host "Creating OU:" -ForegroundColor Yellow
     Write-Host "Path: $path"
     Write-Host "DisplayName: $displayName"
     Write-Host "Description: $description"
@@ -37,3 +37,5 @@ foreach ($OU in $OUs) {
     }
 
 }
+
+Write-Host "Users Created" -ForegroundColor Green

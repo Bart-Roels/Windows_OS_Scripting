@@ -2,7 +2,7 @@
 # MS Server
 
 try {
-    $serverName = "WIN17-MS"
+    $serverName = "MS"
     # Define the share name and path
     $SystemShare = "C$"
     $drive = $SystemShare.replace("$", ":")
@@ -50,9 +50,10 @@ try {
         $Inheritance="ContainerInherit, ObjectInherit"
         $Propagation="None"
         $AccessControlType="Allow"
-        $rule=New-Object System.Security.AccessControl.FileSystemAccessRule
-        ($Identity,$Permission,$Inheritance,$Propagation,$AccessControlType)
-        $acl.AddAccessRule($rule)
+
+
+        $AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($Identity,$Permission,$Inheritance,$Propagation,$AccessControlType)
+        $acl.SetAccessRule($AccessRule)
 
         # Setting Modify for Authenticated Users
         $Identity="Authenticated Users"
@@ -60,9 +61,9 @@ try {
         $Inheritance="ContainerInherit, ObjectInherit"
         $Propagation="None"
         $AccessControlType="Allow"
-        $rule=New-Object System.Security.AccessControl.FileSystemAccessRule
-            ($Identity,$Permission,$Inheritance,$Propagation,$AccessControlType)
-        $acl.AddAccessRule($rule)
+
+        $AccessRule=New-Object System.Security.AccessControl.FileSystemAccessRule($Identity,$Permission,$Inheritance,$Propagation,$AccessControlType)
+        $acl.SetAccessRule($AccessRule)
 
         Set-Acl $path $acl
 

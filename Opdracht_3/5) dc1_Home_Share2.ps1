@@ -2,7 +2,7 @@
 # MS Server
 
 try {
-    $serverName = "WIN17-MS"
+    $serverName = "MS"
     # Define the share name and path
     $SystemShare = "C$"
     $drive = $SystemShare.replace("$", ":")
@@ -63,7 +63,7 @@ try {
         $Inheritance="ContainerInherit, ObjectInherit"
         $Propagation="None"
         $AccessControlType="Allow"
-        $rule=New-Object System.Security.AccessControl.FileSystemAccessRule($Identity,$Permission,$Inheritance,$Propagation,$AccessControlType)
+        $rule= New-Object System.Security.AccessControl.FileSystemAccessRule($Identity,$Permission,$Inheritance,$Propagation,$AccessControlType)
         $acl.AddAccessRule($rule)
 
         # Setting Read & Execute for Authenticated Users on This Folder only
@@ -72,7 +72,7 @@ try {
         $Inheritance="None"
         $Propagation="NoPropagateInherit"
         $AccessControlType="Allow"
-        $rule=New-Object System.Security.AccessControl.FileSystemAccessRule($Identity,$Permission,$Inheritance,$Propagation,$AccessControlType)
+        $rule= New-Object System.Security.AccessControl.FileSystemAccessRule($Identity,$Permission,$Inheritance,$Propagation,$AccessControlType)
         $acl.AddAccessRule($rule)
 
         Set-Acl $path $acl
