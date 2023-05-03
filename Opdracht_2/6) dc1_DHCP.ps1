@@ -122,7 +122,7 @@ $createreverse = [Microsoft.VisualBasic.Interaction]::MsgBox("Do you want to cre
 if($createreverse -eq "Yes") {
 
     # Show that reverse lookup zone does not exist and continue script in red
-    Write-Host "Reverse lookup zone does not exist for $zoneName" -ForegroundColor Yellow
+    Write-Host "Reverse lookup zone does not exist creating one..." -ForegroundColor Yellow
 
     # Get network address based on IP address and subnet mask
            
@@ -136,7 +136,7 @@ if($createreverse -eq "Yes") {
 
 }
 else {
-    Write-Host "Reverse lookup zone already exists for $zoneName" -ForegroundColor Green
+    Write-Host "No lookupzone creation" -ForegroundColor Green
 }
 
 
@@ -144,7 +144,7 @@ else {
 # Renaming Default-First-Site-Name + assigning the subnet
 #
 
-write-host "Renaming Default-First-Site-Name + assigning the subnet" -ForegroundColor Yellow
+write-host "Edditing site" -ForegroundColor Yellow
 # Network address + mask
 $networkAddressWithMask = $networkAddress.ToString() + "/" + $prefixLength.ToString()
 
@@ -156,34 +156,34 @@ $inputsite = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the site name 
 
 if($inputsite -eq "") {
     $newsite = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the new site name (e.g. site1)", "Site name")
-    Write-Output "Creating site $newsite ..."
+    Write-Host "Creating site $newsite ..."
     New-ADReplicationSite -Name $newsite -Description $newsite
     New-ADReplicationSubnet -Name $networkAddressWithMask -Site $newsite -Description $newsite -Location $newsite
-    Write-Output "Site $newsite created!" -ForegroundColor Green
+    Write-Host "Site $newsite created!" -ForegroundColor Green
 }
 else {
     # Check if site exists
     $ADReplicationSite=Get-ADReplicationSite $inputsite -ErrorAction SilentlyContinue 
     # If the site does not exist, create it
     if (!$ADReplicationSite) {
-        Write-Output "Creating site $inputsite ..."
+        Write-Host "Creating site $inputsite ..."
         New-ADReplicationSite -Name $inputsite -Description $inputsite
         New-ADReplicationSubnet -Name $networkAddressWithMask -Site $inputsite -Description $inputsite -Location $inputsite
     }
     else {
-        Write-Output "Site $inputsite already exists!" -ForegroundColor Green
+        Write-Host "Site $inputsite already exists!" -ForegroundColor Green
         # Ask to user if he wants to rename the site
         $renameSite = [Microsoft.VisualBasic.Interaction]::MsgBox("Do you want to rename the site $inputsite? (y/n)", "YesNo", "Reboot server")
         # If user clicks yes reboot server
         if ($reboot -eq "Yes") {
-            Write-Output "Renaming site $inputsite ..."
+            Write-Host "Renaming site $inputsite ..."
             $newSiteName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the new site name (e.g. site1)", "Site name")
             $ADReplicationSite | Rename-ADObject -NewName $newSiteName
             Get-ADReplicationSite $newSiteName | Set-ADReplicationSite -Description $newSiteName
             New-ADReplicationSubnet -Name $networkAddressWithMask -Site $newSiteName -Description $newSiteName -Location $newSiteName
         }
         else {
-            Write-Output "Site $inputsite not renamed!" 
+            Write-Host "Site $inputsite not renamed!" 
         }
     }
 }
@@ -205,12 +205,12 @@ $ip=$eth0 | Get-NetIPAddress -AddressFamily IPv4
 $WindowsFeature="DHCP"
 if (Get-WindowsFeature $WindowsFeature -ComputerName $ComputerName | Where-Object { $_.installed -eq $false })
 {
-    Write-Output "Installing $WindowsFeature ..." -ForegroundColor Yellow
+    Write-Host "Installing $WindowsFeature ..." -ForegroundColor Yellow
     Install-WindowsFeature $WindowsFeature -ComputerName $ComputerName -IncludeManagementTools
 }
 else
 {
-    Write-Output "$WindowsFeature already installed ..." -ForegroundColor Green
+    Write-Host "$WindowsFeature already installed ..." -ForegroundColor Green
 }
 
 
@@ -219,11 +219,11 @@ else
 #
 if (Get-DhcpServerInDC | Where-Object { $_.IPAddress -match $ip.IPAddress })
 {
-    Write-Output "DHCP server already authorized!"
+    Write-Host "DHCP server already authorized!"
 }
 else
 {
-    Write-Output "Authorizing the DHCP server in AD ..."
+    Write-Host "Authorizing the DHCP server in AD ..."
         
     Add-DhcpServerInDC -IPAddress $ip.ipaddress -DnsName $UserDNSDomain
 
