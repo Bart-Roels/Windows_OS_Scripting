@@ -114,40 +114,33 @@ write-host "Network address: $networkAddress" -ForegroundColor Green
 
 Get-DnsServerZone -ComputerName $ComputerName -ErrorAction SilentlyContinue
 
-# ask for console input if the zone is in the list
-$zoneName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the reverse lookup zone name (e.g. 10.in-addr.arpa)", "Reverse lookup zone name")
 
-# Check if reverse lookup zone already exists
-$zoneExists = Get-DnsServerZone -Name $zoneName -ComputerName $ComputerName -ErrorAction SilentlyContinue
 
-# If the input create a reverse lookup zone
-if($zoneName -eq "") {
-    Write-Host "No reverse lookup zone name entered" -ForegroundColor Yellow
+# Ask if user wants to create a reverse lookup zone with y/n msgbox
+$createreverse = [Microsoft.VisualBasic.Interaction]::MsgBox("Do you want to create a reverse lookupzone?? (y/n)", "YesNo", "Create reverse zone")
+
+if($createreverse -eq "Yes") {
+    # ask for console input if the zone is in the list
+    $zoneName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the reverse lookup zone name (e.g. 10.in-addr.arpa)", "Reverse lookup zone name")
 
     # Show that reverse lookup zone does not exist and continue script in red
-    Write-Host "Reverse lookup zone does not exist for $zoneName" -ForegroundColor Red
+    Write-Host "Reverse lookup zone does not exist for $zoneName" -ForegroundColor Yellow
 
     # Get network address based on IP address and subnet mask
-       
+           
     # Create DNS reverse lookup zone
     Add-DnsServerPrimaryZone -NetworkId $networkAddress -ReplicationScope "Forest" -DynamicUpdate "Secure"
- 
+     
     # register dns-clients --> Pointer record aangemaakt worden
     register-dnsclient
- 
+     
     Write-Host "DNS reverse lookup zone created for $networkAddress/$prefixLength" -ForegroundColor Green  
 
 }
 else {
-
-    if($zoneExists) {
-        Write-Host "Reverse lookup zone already exists for $zoneName" -ForegroundColor Green
-    }
-    else {
-        Write-Host "Reverse lookup zone does not exist for $zoneName" -ForegroundColor Red
-    }
-       
+    Write-Host "Reverse lookup zone already exists for $zoneName" -ForegroundColor Green
 }
+
 
 #
 # Renaming Default-First-Site-Name + assigning the subnet
@@ -282,8 +275,8 @@ if($createScope -eq "Yes") {
         Add-Dhcpserverv4ExclusionRange `
         -Computername $ComputerName `
         -ScopeID $scopeId `
-        -StartRange $excludeStartRange `
-        -EndRange $excludeEndRange
+        -StartRange $startExcludedRange `
+        -EndRange $endExcludedRange
 
 
         Write-Host "Scope $ScopeName created" -ForegroundColor Green

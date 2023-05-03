@@ -28,8 +28,8 @@ Install-ADDSDomainController `
 
 # Ask for a reboot
 Write-Output "The computer needs to be rebooted. Press any key to reboot." -ForegroundColor Yellow
-$null = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-Restart-Computer -Force
+# Reboot the computer but ask for confirmation
+Restart-Computer -Confirm:$true
 
 
 

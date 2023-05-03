@@ -138,11 +138,13 @@ if ($currentComputerName -eq $newComputerName)
 else
 {
     Write-Output "Renaming the computer to $newComputerName and rebooting …"
+    
 	Rename-Computer -ComputerName $currentComputerName -NewName $newComputerName -Confirm:$false
-    # Say that the computer needs to be rebooted
-    Write-Output "The computer needs to be rebooted. Press any key to reboot." -ForegroundColor Yellow
-    $null = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    Restart-Computer -Force
+
+    # Reboot the computer but ask for confirmation
+    Restart-Computer -Confirm:$true
+
+
 }
 
 

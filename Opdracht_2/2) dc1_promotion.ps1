@@ -45,7 +45,7 @@ catch {
 finally {
     Write-Host "Domain configuration complete." -ForegroundColor Green
     # Say that the computer needs to be rebooted
-    Write-Output "The computer needs to be rebooted. Press any key to reboot." -ForegroundColor Yellow
-    $null = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    Restart-Computer -Force
+    Write-Output "The computer needs to be rebooted." -ForegroundColor Yellow
+    # Reboot the computer but ask for confirmation
+    Restart-Computer -Confirm:$true
 }
