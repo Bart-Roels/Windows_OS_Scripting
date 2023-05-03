@@ -120,8 +120,6 @@ Get-DnsServerZone -ComputerName $ComputerName -ErrorAction SilentlyContinue
 $createreverse = [Microsoft.VisualBasic.Interaction]::MsgBox("Do you want to create a reverse lookupzone?? (y/n)", "YesNo", "Create reverse zone")
 
 if($createreverse -eq "Yes") {
-    # ask for console input if the zone is in the list
-    $zoneName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the reverse lookup zone name (e.g. 10.in-addr.arpa)", "Reverse lookup zone name")
 
     # Show that reverse lookup zone does not exist and continue script in red
     Write-Host "Reverse lookup zone does not exist for $zoneName" -ForegroundColor Yellow
@@ -154,41 +152,56 @@ $networkAddressWithMask = $networkAddress.ToString() + "/" + $prefixLength.ToStr
 Get-ADReplicationSite -Filter * 
 
 # Ask to user wicc site to rename
-$inputsite = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the first site name (e.g. site1)", "Site name")
+$inputsite = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the site name you want to eddit or leave empty to create one", "Site name")
 
-# Check if site exists
-$ADReplicationSite=Get-ADReplicationSite $inputsite -ErrorAction SilentlyContinue
-
-# If the site does not exist, create it
-if (!$ADReplicationSite) {
-    Write-Output "Creating site $inputsite ..."
-    New-ADReplicationSite -Name $inputsite -Description $inputsite
-    New-ADReplicationSubnet -Name $networkAddressWithMask -Site $inputsite -Description $inputsite -Location $inputsite
+if($inputsite -eq "") {
+    $newsite = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the new site name (e.g. site1)", "Site name")
+    Write-Output "Creating site $newsite ..."
+    New-ADReplicationSite -Name $newsite -Description $newsite
+    New-ADReplicationSubnet -Name $networkAddressWithMask -Site $newsite -Description $newsite -Location $newsite
+    Write-Output "Site $newsite created!" -ForegroundColor Green
 }
 else {
-    Write-Output "Site $inputsite already exists!" -ForegroundColor Green
-    # Ask to user if he wants to rename the site
-    $renameSite = [Microsoft.VisualBasic.Interaction]::MsgBox("Do you want to rename the site $inputsite? (y/n)", "YesNo", "Reboot server")
-    # If user clicks yes reboot server
-    if ($reboot -eq "Yes") {
-        Write-Output "Renaming site $inputsite ..."
-        $newSiteName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the first site name (e.g. site1)", "Site name")
-        $ADReplicationSite | Rename-ADObject -NewName $newSiteName
-        Get-ADReplicationSite $newSiteName | Set-ADReplicationSite -Description $newSiteName
-        New-ADReplicationSubnet -Name $networkAddressWithMask -Site $newSiteName -Description $newSiteName -Location $newSiteName
+    # Check if site exists
+    $ADReplicationSite=Get-ADReplicationSite $inputsite -ErrorAction SilentlyContinue 
+    # If the site does not exist, create it
+    if (!$ADReplicationSite) {
+        Write-Output "Creating site $inputsite ..."
+        New-ADReplicationSite -Name $inputsite -Description $inputsite
+        New-ADReplicationSubnet -Name $networkAddressWithMask -Site $inputsite -Description $inputsite -Location $inputsite
     }
     else {
-        Write-Output "Site $inputsite not renamed!" 
+        Write-Output "Site $inputsite already exists!" -ForegroundColor Green
+        # Ask to user if he wants to rename the site
+        $renameSite = [Microsoft.VisualBasic.Interaction]::MsgBox("Do you want to rename the site $inputsite? (y/n)", "YesNo", "Reboot server")
+        # If user clicks yes reboot server
+        if ($reboot -eq "Yes") {
+            Write-Output "Renaming site $inputsite ..."
+            $newSiteName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the new site name (e.g. site1)", "Site name")
+            $ADReplicationSite | Rename-ADObject -NewName $newSiteName
+            Get-ADReplicationSite $newSiteName | Set-ADReplicationSite -Description $newSiteName
+            New-ADReplicationSubnet -Name $networkAddressWithMask -Site $newSiteName -Description $newSiteName -Location $newSiteName
+        }
+        else {
+            Write-Output "Site $inputsite not renamed!" 
+        }
     }
 }
+
+#
+# Random networks stuff
+#
 
 $eth0=Get-NetAdapter -Physical | Where-Object { $_.PhysicalMediaType -match "802.3"-and $_.status -eq "up"}
 $ip=$eth0 | Get-NetIPAddress -AddressFamily IPv4
+
 
 #
 # Install the DHCP Server Role on DC1
 #
 # Check if DHCP Server Role is installed, if not install it
+
+
 $WindowsFeature="DHCP"
 if (Get-WindowsFeature $WindowsFeature -ComputerName $ComputerName | Where-Object { $_.installed -eq $false })
 {
