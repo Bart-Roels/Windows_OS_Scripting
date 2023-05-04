@@ -1,4 +1,8 @@
-# Create users in Active Directory
+#
+#
+# PAS DE LIJN OP FUCKING LIJN 27 AAN!!!!!!!!!!!!!!
+#
+# 
 
 # Open the csv file and add the user names
 $userList = Import-Csv -Path "C:\Users\Administrator\Downloads\Board.csv" -Delimiter ";"
@@ -21,23 +25,20 @@ foreach ($user in $userList) {
     $path = $user.Path
     # Get home directory from csv file
     $homeDirectory = "\\MS\Homes\$samAccountName"
-    $homeDrive = $user.HomeDrive
     # Drive letter
-
-
+    $driveletter = $user.Driveletter
     # Get upn suffix from server
     $upnSuffix = Get-ADForest | Select-Object -ExpandProperty UPNSuffixes
-
     # User principal name
     $userPrincipalName = "$samAccountName@$upnSuffix"
-
     # Lastname
     $lastname = $surname
+    # Description
+    $desc = $user.Description
 
     # Print the user settings
     Write-Host "=================================="
     Write-Host $user
-
     write-host "Creating user:" -ForegroundColor Yellow
     Write-Host "FirstName (name): $name"
     Write-Host "Lastname (lastname): "$lastname
@@ -46,7 +47,8 @@ foreach ($user in $userList) {
     Write-Host "UserPrincipalName: $userPrincipalName"
     Write-Host "Password: $password"
     Write-Host "Path: $path"
-    Write-Host "DriveLetter: $homeDrive"
+    Write-Host "Description: $desc"
+    Write-Host "DriveLetter: $driveletter"
     Write-Host "HomeDirectory: $homeDirectory"
     Write-Host "=================================="
 
@@ -62,9 +64,9 @@ foreach ($user in $userList) {
         
         Write-Output "Making $User.Name in $Path ..." 
 
-        New-ADUser -Name $name -SamAccountName $samAccountName -UserPrincipalName $userPrincipalName -DisplayName $displayName -GivenName $givenName -Surname $lastname -HomeDrive $homeDrive -HomeDirectory $homeDirectory -Path $path  -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) -Enabled:$true
 	    
-
+        New-ADUser -Name $name -GivenName $givenName -Description $desc -Surname $lastname -DisplayName $displayName -SamAccountName $samAccountName -UserPrincipalName $userPrincipalName -Path $path -HomeDirectory $homeDirectory -HomeDrive  $driveletter -AccountPassword (ConvertTo-SecureString $password -AsPlainText -Force) -Enabled $true -ChangePasswordAtLogon $false -PasswordNeverExpires $true -ErrorAction Stop
+        
         New-Item -Path $homeDirectory -type directory -Force
     
         $acl=Get-Acl $homeDirectory
@@ -75,7 +77,7 @@ foreach ($user in $userList) {
         # Setting Modify for the User account
         $Identity=$userPrincipalName
         $Permission="Modify"
-    	    $Inheritance="ContainerInherit, ObjectInherit"
+        $Inheritance="ContainerInherit, ObjectInherit"
         $Propagation="None"
         $AccessControlType="Allow"
         $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($Identity,$Permission,$Inheritance,$Propagation,$AccessControlType)

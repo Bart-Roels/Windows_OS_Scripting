@@ -5,7 +5,7 @@
 # - NTFS perms: Administrators - full control and DL-Personeel - modify
 #
 
-$fileServer="DC2"
+$fileServer="win17-dc2"
 
 $systemShare="C$"
 $driveLetter=$systemShare.replace("$",":")
@@ -14,7 +14,7 @@ $localPath=$driveLetter+"\"+$shareName
 $UNCPath="\\"+$fileServer+"\"+$systemShare+"\"+$shareName
 
 # ZET HIER U GROEP DA MODIFICATIE RECHTEN MOET KRIJGEN
-$modifyGroup="DG-Board"
+$modifyGroup="Authenticated Users"
 
 if (Get-Item -Path $UNCPath -ErrorAction SilentlyContinue)
 {
