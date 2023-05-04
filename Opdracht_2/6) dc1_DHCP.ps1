@@ -130,7 +130,10 @@ if($createreverse -eq "Yes") {
     Add-DnsServerPrimaryZone -NetworkId $networkAddress -ReplicationScope "Forest" -DynamicUpdate "Secure"
      
     # register dns-clients --> Pointer record aangemaakt worden
-    register-dnsclient
+    Register-DnsClient
+
+    # Make ptr record for dns server
+    Add-DnsServerResourceRecordPtr -Name $ComputerName -ZoneName $networkAddress.in-addr.arpa -PtrDomainName $ComputerName.$UserDNSDomain
      
     Write-Host "DNS reverse lookup zone created for $networkAddress/$prefixLength" -ForegroundColor Green  
 

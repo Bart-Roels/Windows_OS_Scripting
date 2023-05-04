@@ -1,38 +1,35 @@
-#
-# Promoting DC2 to become an additional DC in the existing Windows domain
-#
-$ComputerName=$env:COMPUTERNAME
-$Credential=$env:USERNAME
-$domainCredential="$env:USERDOMAIN\$Credential"
-$secondDC="DC2"
-$UserDNSDomain=$env:USERDNSDOMAIN.tolower()
-
-$remoteSession=New-PSSession -ComputerName $secondDC -Credential $domainCredential
-
-Invoke-Command -Session $remoteSession -Scriptblock {
-
-    #
-    # Installing AD Domain Services - ADDS
-    #
-
-    $WindowsFeature="AD-Domain-Services"
-    if (Get-WindowsFeature $WindowsFeature -ComputerName $ComputerName | Where-Object { $_.installed -eq $false })
-    {
-        Write-Output "Installing $WindowsFeature ..."
-        Install-WindowsFeature $WindowsFeature -ComputerName $ComputerName -IncludeManagementTools
+# Install the AD DS role if it's not already installed
+$roles = "AD-Domain-Services", "DNS"
+foreach ($role in $roles) {
+    if ((Get-WindowsFeature -Name $role).Installed -ne $true) {
+        Install-WindowsFeature -Name $role -IncludeManagementTools
+        # Installing background green
+        Write-Host "The $role role has been installed." -BackgroundColor Green
     }
-    else
-    {
-        Write-Output "$WindowsFeature already installed ..."
+    else {
+        # Alread installed forgrond orange
+        Write-Host "The $role role is already installed." -ForegroundColor Yellow
     }
+}
 
-    #
-    # Create Domain Controller
-    #
-    Install-ADDSDomainController `
-    -DomainName $args[0] `
-    -InstallDns:$true `
-    -Credential (Get-Credential $args[1]) `
+
+
+# Set the domain name and admin credentials
+$domainName = "intranet.mct.be"
+$adminUsername = "administrator@intranet.mct.be"
+$adminPassword = "P@ssw0rd"
+
+# Promote the server to a domain controller
+Install-ADDSDomainController `
+    -DomainName $domainName `
+    -Credential (Get-Credential $adminUsername) `
     -Force:$true
 
-} -ArgumentList $UserDNSDomain, $domainCredential
+
+# Ask for a reboot
+Write-Output "The computer needs to be rebooted. Press any key to reboot." -ForegroundColor Yellow
+# Reboot the computer but ask for confirmation
+Restart-Computer -Confirm:$true
+
+
+

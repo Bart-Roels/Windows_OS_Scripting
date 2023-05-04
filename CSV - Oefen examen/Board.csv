@@ -1,0 +1,15 @@
+Surname;Name;SamAccountName;GivenName;DisplayName;Description;AccountPassword;Driveletter;Path
+Leon;David;Leon.David;Leon.David;Leon.David;CEO (Mangement);P@ssw0rd;H:;OU=Management,OU=Intranet,DC=intranet,DC=mct,DC=be
+Mark;Twix;Mark.Twix;Mark.Twix;Mark.Twix;CEO (Mangement);P@ssw0rd;H:;OU=Management,OU=Intranet,DC=intranet,DC=mct,DC=be
+Stephen;George;Stephen.George;Stephen.George;Stephen.George;Assistant Mangement;P@ssw0rd;H:;OU=Management,OU=Intranet,DC=intranet,DC=mct,DC=be
+Natalie;Jhon;Natalie.Jhon;Natalie.Jhon;Natalie.Jhon;Marketing;P@ssw0rd;H:;OU=Marketing,OU=Intranet,DC=intranet,DC=mct,DC=be
+Addison;Soans;Addison.Soans;Addison.Soans;Addison.Soans;Marketing;P@ssw0rd;H:;OU=Marketing,OU=Intranet,DC=intranet,DC=mct,DC=be
+Mark;Davis;Mark.Davis;Mark.Davis;Mark.Davis;Marketing;P@ssw0rd;H:;OU=Marketing,OU=Intranet,DC=intranet,DC=mct,DC=be
+Brent;Howson;Brent.Howson;Brent.Howson;Brent.Howson;Reception;P@ssw0rd;H:;OU=Reception,OU=Intranet,DC=intranet,DC=mct,DC=be
+Bart;Roels;Bart.Roels;Bart.Roels;Bart.Roels;Reception;P@ssw0rd;H:;OU=Reception,OU=Intranet,DC=intranet,DC=mct,DC=be
+Jens;Lage;Jens.Lage;Jens.Lage;Jens.Lage;BU Manger (IT);P@ssw0rd;H:;OU=ICT Infrastructure Solutions,OU=Business Units,OU=Intranet,DC=intranet,DC=mct,DC=be
+Tjorven;Buize;Tjorven.Buize;Tjorven.Buize;Tjorven.Buize;BU Manger (Product);P@ssw0rd;H:;OU=Business Productivity Solutions,OU=Business Units,OU=Intranet,DC=intranet,DC=mct,DC=be
+Tom;Decavele;Tom.Decavele;Tom.Decavele;Tom.Decavele;BU Manger (MCAD);P@ssw0rd;H:;OU=CAD & PLM Solutions,OU=Business Units,OU=Intranet,DC=intranet,DC=mct,DC=be
+Hans;Ameel;Hans.Ameel;Hans.Ameel;Hans.Ameel;SD Manger;P@ssw0rd;H:;OU=Service Desk ,OU=Intranet,DC=intranet,DC=mct,DC=be
+Dieter;Depreester;Dieter.Depreester;Dieter.Depreester;Dieter.Depreester;Acounting;P@ssw0rd;H:;OU=Accounting,OU=Intranet,DC=intranet,DC=mct,DC=be
+Marie;Dewritte;Marie.Dewritte;Marie.Dewritte;Marie.Dewritte;Acounting;P@ssw0rd;H:;OU=Accounting,OU=Intranet,DC=intranet,DC=mct,DC=be

@@ -1,0 +1,11 @@
+Path;DisplayName;Name;Description
+DC=intranet,DC=mct,DC=be;Intranet;Intranet;Hoofd OU 
+OU=Intranet,DC=intranet,DC=mct,DC=be;Management;Management;Management OU
+OU=Intranet,DC=intranet,DC=mct,DC=be;Accounting;Accounting;Accounting OU
+OU=Intranet,DC=intranet,DC=mct,DC=be;Marketing;Marketing;Marketing OU
+OU=Intranet,DC=intranet,DC=mct,DC=be;Reception;Reception;Reception OU
+OU=Intranet,DC=intranet,DC=mct,DC=be;Business Units;Business Units; Business Units OU
+OU=Business Units,OU=Intranet,DC=intranet,DC=mct,DC=be;ICT Infrastructure Solutions;ICT Infrastructure Solutions;ICT Infrastructure Solutions OU
+OU=Business Units,OU=Intranet,DC=intranet,DC=mct,DC=be;CAD & PLM Solutions;CAD & PLM Solutions;CAD & PLM Solutions OU
+OU=Business Units,OU=Intranet,DC=intranet,DC=mct,DC=be;Business Productivity Solutions;Business Productivity Solutions;Business Productivity Solutions OU
+OU=Intranet,DC=intranet,DC=mct,DC=be;Service Desk;Service Desk;OU Service Desk 

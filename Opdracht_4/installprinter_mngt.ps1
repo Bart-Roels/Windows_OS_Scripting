@@ -21,7 +21,7 @@ else
 #
 
 $SpoolFolder = (Get-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Print\Printers").DefaultSpoolDirectory
-$NewSpoolFolder="E:\Output"
+$NewSpoolFolder="C:\Output"
 $Path=$NewSpoolFolder
 
 if (Get-Item -Path $Path -ErrorAction SilentlyContinue)

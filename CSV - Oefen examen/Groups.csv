@@ -1,0 +1,15 @@
+Path;Name;DisplayName;Description;GroupCategory;GroupScope
+OU=Management,OU=Intranet,DC=intranet,DC=mct,DC=be;DG-Management;DG-Management;DG-Management;Security;DomainLocal
+OU=Management,OU=Intranet,DC=intranet,DC=mct,DC=be;GG-Management;GG-Management;GG-Management;Security;Global
+OU=Management,OU=Intranet,DC=intranet,DC=mct,DC=be;DG-ManagementAssisant;DG-ManagementAssisant;DG-ManagementAssisant;Security;DomainLocal
+OU=Management,OU=Intranet,DC=intranet,DC=mct,DC=be;GG-ManagementAssisant;GG-ManagementAssisant;GG-ManagementAssisant;Security;Global
+OU=Accounting,OU=Intranet,DC=intranet,DC=mct,DC=be;DG-Accounting;DG-Accounting;DG-Accounting;Security;DomainLocal
+OU=Accounting,OU=Intranet,DC=intranet,DC=mct,DC=be;GG-Accounting;GG-Accounting;GG-Accounting;Security;Global
+OU=Marketing,OU=Intranet,DC=intranet,DC=mct,DC=be;DG-Marketing;DG-Marketing;DG-Marketing;Security;DomainLocal
+OU=Marketing,OU=Intranet,DC=intranet,DC=mct,DC=be;GG-Marketing;GG-Marketing;GG-Marketing;Security;Global
+OU=Reception,OU=Intranet,DC=intranet,DC=mct,DC=be;DG-Reception;DG-Reception;DG-Reception;Security;DomainLocal
+OU=Reception,OU=Intranet,DC=intranet,DC=mct,DC=be;GG-Reception;GG-Reception;GG-Reception;Security;Global
+OU=Business Units,OU=Intranet,DC=intranet,DC=mct,DC=be;DG-BUMangers;DG-BUMangers;DG-BUMangers;Security;DomainLocal
+OU=Business Units,OU=Intranet,DC=intranet,DC=mct,DC=be;GG-BUMangers;GG-BUMangers;GG-BUMangers;Security;Global
+OU=Service Desk,OU=Intranet,DC=intranet,DC=mct,DC=be;DG-SDMangers;DG-SDMangers;DG-SDMangers;Security;DomainLocal
+OU=Service Desk,OU=Intranet,DC=intranet,DC=mct,DC=be;GG-SDMangers;GG-SDMangers;GG-SDMangers;Security;Global
