@@ -1,4 +1,3 @@
-
 #
 # Get the active ethernet (802.3) network adapter and set the IP configuration
 #
@@ -143,7 +142,6 @@ else
 
     # Reboot the computer but ask for confirmation
     Restart-Computer -Confirm:$true
-
 
 }
 
