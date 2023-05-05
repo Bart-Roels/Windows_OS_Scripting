@@ -133,7 +133,7 @@ if($createreverse -eq "Yes") {
     Register-DnsClient
 
     # Make ptr record for dns server
-    Add-DnsServerResourceRecordPtr -Name $ComputerName -ZoneName $networkAddress.in-addr.arpa -PtrDomainName $ComputerName.$UserDNSDomain
+    #Add-DnsServerResourceRecordPtr -Name $ComputerName -ZoneName $networkAddress.in-addr.arpa -PtrDomainName $ComputerName.$UserDNSDomain
      
     Write-Host "DNS reverse lookup zone created for $networkAddress/$prefixLength" -ForegroundColor Green  
 
@@ -176,9 +176,9 @@ else {
     else {
         Write-Host "Site $inputsite already exists!" -ForegroundColor Green
         # Ask to user if he wants to rename the site
-        $renameSite = [Microsoft.VisualBasic.Interaction]::MsgBox("Do you want to rename the site $inputsite? (y/n)", "YesNo", "Reboot server")
+        $tst = [Microsoft.VisualBasic.Interaction]::MsgBox("Do you want to rename the site $inputsite? (y/n)", "YesNo", "Rename")
         # If user clicks yes reboot server
-        if ($reboot -eq "Yes") {
+        if ($tst -eq "Yes") {
             Write-Host "Renaming site $inputsite ..."
             $newSiteName = [Microsoft.VisualBasic.Interaction]::InputBox("Enter the new site name (e.g. site1)", "Site name")
             $ADReplicationSite | Rename-ADObject -NewName $newSiteName
@@ -349,10 +349,8 @@ if($configureOptions -eq "Yes") {
 Write-Host "DHCP configuration complete" -ForegroundColor Green
 
 
-# Ask for reboot 
-$reboot = [Microsoft.VisualBasic.Interaction]::MsgBox("Reboot server?", "YesNo", "Reboot server")
-# If user clicks yes reboot server
-if ($reboot -eq "Yes") {
-    Restart-Computer -ComputerName $ComputerName
-}
+
+# Reboot the computer but ask for confirmation
+Restart-Computer -Confirm:$true
+
 
